@@ -1,1 +1,1 @@
-add_blackpearl_test("core.shperical_data" shperical_data.cpp)
+add_blackpearl_test("core.sph_data" sph_data.cpp)

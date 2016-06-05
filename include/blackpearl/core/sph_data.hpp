@@ -1,5 +1,5 @@
-#ifndef BLACKPEARL_CORE_SHPERICAL_DATA_HPP
-#define BLACKPEARL_CORE_SHPERICAL_DATA_HPP
+#ifndef BLACKPEARL_CORE_SPH_DATA_HPP
+#define BLACKPEARL_CORE_SPH_DATA_HPP
 
 #include <cstddef>
 #include <exception>
@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <iostream>
 #include <type_traits>
 #include <boost/assert.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -93,4 +92,4 @@ private:
 
 }}
 
-#endif //BLACKPEARL_CORE_SHPERICAL_DATA_HPP
+#endif //BLACKPEARL_CORE_SPH_DATA_HPP
