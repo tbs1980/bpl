@@ -1,0 +1,47 @@
+include(CheckCXXCompilerFlag)
+
+macro(mpp_add_cxx_compiler_flag FLAG ARG_BUILD_TYPE)
+    string(REGEX REPLACE "-" "" SFLAG1 ${FLAG})
+    string(REGEX REPLACE "\\+" "p" SFLAG ${SFLAG1})
+    check_cxx_compiler_flag(${FLAG} COMPILER_SUPPORT_${SFLAG})
+
+    if(COMPILER_SUPPORT_${SFLAG})
+        if(${ARG_BUILD_TYPE} MATCHES "DEBUG")
+             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${FLAG}")
+        elseif(${ARG_BUILD_TYPE} MATCHES "RELEASE")
+            set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${FLAG}")
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
+        endif()
+    endif()
+endmacro(mpp_add_cxx_compiler_flag)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    if(CMAKE_CXX_COMPILER_ID MATCHES "SunPro")
+        mpp_add_cxx_compiler_flag("-g" "DEBUG")
+        mpp_add_cxx_compiler_flag("-fast" "RELEASE")
+
+        mpp_add_cxx_compiler_flag("-std=c++11" "")
+        mpp_add_cxx_compiler_flag("+w2" "")
+
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        mpp_add_cxx_compiler_flag("-g3" "DEBUG")
+        mpp_add_cxx_compiler_flag("-g0" "RELEASE")
+        mpp_add_cxx_compiler_flag("-O3" "RELEASE")
+
+        mpp_add_cxx_compiler_flag("-std=c++11" "")
+        mpp_add_cxx_compiler_flag("-pedantic" "")
+        mpp_add_cxx_compiler_flag("-Wall" "")
+        mpp_add_cxx_compiler_flag("-Wextra" "")
+
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+        mpp_add_cxx_compiler_flag("-g3" "DEBUG")
+        mpp_add_cxx_compiler_flag("-g0" "RELEASE")
+        mpp_add_cxx_compiler_flag("-O3" "RELEASE")
+
+        mpp_add_cxx_compiler_flag("-std=c++11" "")
+        mpp_add_cxx_compiler_flag("-pedantic" "")
+        mpp_add_cxx_compiler_flag("-Wall" "")
+        mpp_add_cxx_compiler_flag("-Wextra" "")
+    endif()
+endif()
