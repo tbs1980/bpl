@@ -27,4 +27,5 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 enable_testing()
 add_subdirectory(test)
+add_subdirectory(perf)
 
