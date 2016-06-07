@@ -21,9 +21,16 @@ endif()
 include(set_compiler_flags)
 
 find_package(Boost 1.53.0 REQUIRED COMPONENTS unit_test_framework)
+find_package(HEALPix REQUIRED)
+find_package(CFITSIO REQUIRED)
+# TODO make sure that we are using the same fitsio for the healpix
 
 include_directories(include)
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(
+    ${Boost_INCLUDE_DIRS}
+    ${HEALPix_INCLUDE_DIRS}
+    ${CFITSIO_INCLUDE_DIRS}
+)
 
 enable_testing()
 add_subdirectory(test)
