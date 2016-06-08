@@ -68,19 +68,38 @@ public:
                 throw std::length_error(msg.str());
             }
         }
-        std::size_t num_spin_two_fields(0);
+        std::size_t nstf(0);
         for(std::size_t i=0;i<m_num_fields;++i){
             if( m_spins[i] == 2){
-                ++num_spin_two_fields;
+                ++nstf;
             }
         }
-        if( num_spin_two_fields % size_t(2) != size_t(0) ){
+        if( nstf % size_t(2) != size_t(0) ){
             std::stringstream msg;
             msg << "the number of spin-2 fields should be an even number.";
             throw std::length_error(msg.str());
         }
 
+        m_num_spin_two_fields = nstf;
+        m_num_spin_zero_fields = m_num_fields - nstf;
+
         m_data = real_matrix_type(m_num_pixels,m_num_fields);
+    }
+
+    inline size_t num_fields() const {
+        return m_num_pixels;
+    }
+
+    inline size_t num_spin_zero_fields() const {
+        return m_num_spin_zero_fields;
+    }
+
+    inline size_t num_spin_two_fields() const {
+        return m_num_spin_two_fields;
+    }
+
+    inline size_t num_pixels() const{
+        return m_num_pixels;
     }
 
 private:
@@ -88,6 +107,8 @@ private:
     std::vector<std::size_t> m_spins;
     std::size_t m_num_fields;
     real_matrix_type m_data;
+    std::size_t m_num_spin_zero_fields;
+    std::size_t m_num_spin_two_fields;
 };
 
 }}

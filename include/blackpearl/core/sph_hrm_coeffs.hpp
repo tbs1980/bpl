@@ -57,7 +57,7 @@ public:
                 << m_max
                 << " should be less than or equal to"
                 << " l_max = "
-                << l_max 
+                << l_max
                 <<".";
             throw std::length_error(msg.str());
         }
@@ -69,11 +69,18 @@ public:
             num_fields
         );
 
+        m_num_shp_hrm_coeffs = num_sph_hrm_coeffs(l_max,m_max);
+
+    }
+
+    inline size_t num_sph_hrm_coeffs() const {
+        return m_num_shp_hrm_coeffs;
     }
 private:
     size_t m_l_max;
     size_t m_m_max;
     size_t m_num_fields;
+    size_t m_num_shp_hrm_coeffs;
     complex_matrix_type m_hrm_coeffs;
 };
 
