@@ -86,6 +86,20 @@ public:
         m_data = real_matrix_type(m_num_pixels,m_num_fields);
     }
 
+    inline real_scalar_type & operator()(
+        size_t const pix,
+        size_t const field
+    ){
+        return m_data(pix,field);
+    }
+
+    inline real_scalar_type const & operator()(
+        size_t const pix,
+        size_t const field
+    ) const{
+        return m_data(pix,field);
+    }
+
     inline size_t num_fields() const {
         return m_num_pixels;
     }

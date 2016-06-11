@@ -63,7 +63,6 @@ public:
         }
 
         size_t const num_coeffs = num_sph_hrm_coeffs(m_l_max,m_max);
-        std::cout<<"num_coeffs = "<<num_coeffs<<std::endl;
         m_hrm_coeffs = complex_matrix_type(
             num_coeffs,
             num_fields
@@ -71,6 +70,40 @@ public:
 
         m_num_shp_hrm_coeffs = num_sph_hrm_coeffs(l_max,m_max);
 
+    }
+
+    inline complex_scalar_type & operator() (
+        size_t const mtpl_l,
+        size_t const mtpl_m,
+        size_t const field
+    ){
+        return m_hrm_coeffs(
+            ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
+            field
+        );
+    }
+
+    inline complex_scalar_type const & operator() (
+        size_t const mtpl_l,
+        size_t const mtpl_m,
+        size_t const field
+    ) const {
+        return m_hrm_coeffs(
+            ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
+            field
+        );
+    }
+
+    inline size_t l_max() const {
+        return m_l_max;
+    }
+
+    inline size_t m_max() const {
+        return m_l_max;
+    }
+
+    inline size_t num_fields() const {
+        return m_num_fields;
     }
 
     inline size_t num_sph_hrm_coeffs() const {

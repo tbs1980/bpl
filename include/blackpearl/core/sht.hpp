@@ -7,6 +7,7 @@
 #include <exception>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <sharp_cxx.h>
 #include "sph_data.hpp"
 #include "sph_hrm_coeffs.hpp"
@@ -83,39 +84,124 @@ public:
     void synthesise(
         sph_hrm_coeffs<real_scalar_type> const & alms,
         shp_data<real_scalar_type> & maps
-    ){
+    ) const {
         size_t const num_alms = alms.num_sph_hrm_coeffs();
         size_t const num_pixels = maps.num_pixels();
         size_t const num_fields = maps.num_fields();
         size_t const num_fields_spin_0 = maps.num_spin_zero_fields();
         size_t const num_fields_spin_2 = maps.num_spin_two_fields();
 
-        complex_scalar_type const  ** p_ptr_a;
-        ALLOC(p_ptr_a,
-            complex_scalar_type const *,
-            num_fields
-        );
-        p_ptr_a[0] = &alms(0,0,0);
+        typedef const complex_scalar_type* const_complex_scalar_pntr_type;
+        const_complex_scalar_pntr_type * p_ptr_a
+            = new const_complex_scalar_pntr_type[num_fields];
+        p_ptr_a[0] = & alms(0,0,0);
 
-        real_scalar_type ** p_ptr_m;
-        ALLOC(p_ptr_m,
-            real_scalar_type *,
-            num_fields
-        );
-        p_ptr_m[0] = &maps(0,0);
+        typedef real_scalar_type* real_scalar_pntr_type;
+        real_scalar_pntr_type * p_ptr_m = new real_scalar_pntr_type[num_fields];
+        p_ptr_m[0] = & maps(0,0);
 
         for(size_t i=1;i<num_fields;++i){
             p_ptr_a[i] = p_ptr_a[i-1] + num_alms;
             p_ptr_m[i] = p_ptr_m[i-1] + num_pixels;
         }
-        
+
+        int num_parallel_transforms = (int) num_fields_spin_0;
+        int spin = 0;
+        if(num_parallel_transforms >0)
+        {
+            sharp_execute(SHARP_ALM2MAP,
+                spin,
+                (void*) & p_ptr_a[0],
+                (void*) & p_ptr_m[0],
+                (const sharp_geom_info*) m_p_geom_info,
+                (const sharp_alm_info*) m_p_alm_info,
+                num_parallel_transforms,
+                cxxjobhelper__<real_scalar_type>::val,
+                0,
+                0
+            );
+        }
+        num_parallel_transforms = (int) num_fields_spin_2/2;
+        spin = 2;
+        if(num_parallel_transforms > 0)
+        {
+            sharp_execute(SHARP_ALM2MAP,
+                spin,
+                (void*) & p_ptr_a[num_fields_spin_0],
+                (void*) & p_ptr_m[num_fields_spin_0],
+                (const sharp_geom_info*) m_p_geom_info,
+                (const sharp_alm_info*) m_p_alm_info,
+                num_parallel_transforms,
+                cxxjobhelper__<real_scalar_type>::val,
+                0,
+                0
+            );
+        }
+
+        delete[] p_ptr_a;
+        delete[] p_ptr_m;
     }
 
     void analyse(
         shp_data<real_scalar_type> const & maps,
         sph_hrm_coeffs<real_scalar_type> & alms
-    ){
+    ) const {
+        size_t const num_alms = alms.num_sph_hrm_coeffs();
+        size_t const num_pixels = maps.num_pixels();
+        size_t const num_fields = maps.num_fields();
+        size_t const num_fields_spin_0 = maps.num_spin_zero_fields();
+        size_t const num_fields_spin_2 = maps.num_spin_two_fields();
 
+        typedef const real_scalar_type* const_real_scalar_pntr_type;
+        const_real_scalar_pntr_type * p_ptr_m
+            = new const_real_scalar_pntr_type[num_fields];
+        p_ptr_m[0] = & maps(0,0);
+
+        typedef complex_scalar_type* complex_scalar_pntr_type;
+        complex_scalar_pntr_type * p_ptr_a
+            = new complex_scalar_pntr_type[num_fields];
+        p_ptr_a[0] = & alms(0,0,0);
+
+        for(size_t i=1;i<num_fields;++i){
+            p_ptr_m[i] = p_ptr_m[i-1] + num_pixels;
+            p_ptr_a[i] = p_ptr_a[i-1] + num_alms;
+        }
+
+        int num_parallel_transforms = (int) num_fields_spin_0;
+        int spin = 0;
+        if( num_fields_spin_0 > 0)
+        {
+            sharp_execute(SHARP_MAP2ALM,
+                spin,
+                (void*) & p_ptr_a[0],
+                (void*) & p_ptr_m[0],
+                (const sharp_geom_info*) m_p_geom_info,
+                (const sharp_alm_info*) m_p_alm_info,
+                num_parallel_transforms,
+                cxxjobhelper__<real_scalar_type>::val,
+                0,
+                0
+            );
+        }
+        num_parallel_transforms = (int) num_fields_spin_2/2;
+        spin = 2;
+        if( num_fields_spin_2 > 0)
+        {
+            sharp_execute(SHARP_MAP2ALM,
+                spin,
+                (void*) & p_ptr_a[num_fields_spin_0],
+                (void*) & p_ptr_m[num_fields_spin_0],
+                (const sharp_geom_info*) m_p_geom_info,
+                (const sharp_alm_info*) m_p_alm_info,
+                num_parallel_transforms,
+                cxxjobhelper__<real_scalar_type>::val,
+                0,
+                0
+            );
+        }
+
+        delete[] p_ptr_a;
+        delete[] p_ptr_m;
     }
 
 private:
