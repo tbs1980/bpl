@@ -9,6 +9,8 @@
 #include <string>
 #include <boost/assert.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
 #include "../config.hpp"
 
 namespace blackpearl{ namespace core {
@@ -24,6 +26,10 @@ public:
     typedef std::complex<real_scalar_type> complex_scalar_type;
     typedef boost::numeric::ublas::matrix<
         complex_scalar_type> complex_matrix_type;
+    typedef boost::numeric::ublas::matrix_row<complex_matrix_type>
+        complex_matrix_row_type;
+    typedef boost::numeric::ublas::vector<complex_scalar_type>
+        complex_vector_type;
 
     static size_t num_sph_hrm_coeffs(size_t const l_max,size_t const m_max) {
         return (m_max+size_t(1))*(l_max+size_t(2))/size_t(2)
@@ -108,6 +114,32 @@ public:
 
     inline size_t num_sph_hrm_coeffs() const {
         return m_num_shp_hrm_coeffs;
+    }
+
+    inline void set_row(
+        size_t const mtpl_l,
+        size_t const mtpl_m,
+        complex_vector_type const & shc_row
+    ){
+        for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
+            m_hrm_coeffs(
+                ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
+                fld_i
+            ) = shc_row(fld_i);
+        }
+    }
+
+    inline void get_row(
+        size_t const mtpl_l,
+        size_t const mtpl_m,
+        complex_vector_type & shc_row
+    ) const {
+        for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
+            shc_row(fld_i) = m_hrm_coeffs(
+                ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
+                fld_i
+            );
+        }
     }
 private:
     size_t m_l_max;
