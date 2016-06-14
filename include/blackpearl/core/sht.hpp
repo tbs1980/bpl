@@ -26,8 +26,7 @@ template<> struct cxxjobhelper__<float>
   { enum {val=0}; };
 
 template<class real_scalar_type>
-class sht
-{
+class sht {
 public:
     static_assert(std::is_floating_point<real_scalar_type>::value,
         "The real_scalar_type should be a floating point type");
