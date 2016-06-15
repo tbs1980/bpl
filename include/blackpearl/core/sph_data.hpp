@@ -83,21 +83,21 @@ public:
         m_num_spin_two_fields = nstf;
         m_num_spin_zero_fields = m_num_fields - nstf;
 
-        m_data = real_matrix_type(m_num_pixels,m_num_fields);
+        m_data = real_matrix_type(m_num_fields,m_num_pixels);
     }
 
     inline real_scalar_type & operator()(
-        size_t const pix,
-        size_t const field
+        size_t const field,
+        size_t const pix
     ){
-        return m_data(pix,field);
+        return m_data(field,pix);
     }
 
     inline real_scalar_type const & operator()(
-        size_t const pix,
-        size_t const field
+        size_t const field,
+        size_t const pix
     ) const{
-        return m_data(pix,field);
+        return m_data(field,pix);
     }
 
     inline size_t num_fields() const {

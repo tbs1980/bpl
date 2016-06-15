@@ -68,24 +68,24 @@ pow_spec<real_scalar_type> extract_pow_spec(
     for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
         for(size_t fld_j = fld_i; fld_j < num_fields; ++fld_j){
             for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
-                ps(mtpl_l,fld_i,fld_j) =
-                    shc_1(mtpl_l,0,fld_i).real()*shc_2(mtpl_l,0,fld_j).real();
+                ps(fld_i,fld_j,mtpl_l) =
+                    shc_1(fld_i,mtpl_l,0).real()*shc_2(fld_j,mtpl_l,0).real();
             }
             for(size_t mtpl_m = 1; mtpl_m <= m_max; ++mtpl_m){
                 for(size_t mtpl_l = mtpl_m; mtpl_l <= l_max; ++mtpl_l){
-                    ps(mtpl_l,fld_i,fld_j) +=
+                    ps(fld_i,fld_j,mtpl_l) +=
                         2*(
-                            shc_1(mtpl_l,mtpl_m,fld_i).real()*
-                            shc_2(mtpl_l,mtpl_m,fld_j).real()
-                            + shc_1(mtpl_l,mtpl_m,fld_i).imag()*
-                            shc_2(mtpl_l,mtpl_m,fld_j).imag()
+                            shc_1(fld_i,mtpl_l,mtpl_m).real()*
+                            shc_2(fld_j,mtpl_l,mtpl_m).real()
+                            + shc_1(fld_i,mtpl_l,mtpl_m).imag()*
+                            shc_2(fld_j,mtpl_l,mtpl_m).imag()
                         );
                 }
             }
             for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
-                ps(mtpl_l,fld_i,fld_j) /= real_scalar_type(2*mtpl_l+1);
+                ps(fld_i,fld_j,mtpl_l) /= real_scalar_type(2*mtpl_l+1);
                 if(fld_i != fld_j){
-                    ps(mtpl_l,fld_j,fld_i) = ps(mtpl_l,fld_i,fld_j);
+                    ps(fld_j,fld_i,mtpl_l) = ps(fld_i,fld_j,mtpl_l);
                 }
             }
         }
@@ -109,7 +109,8 @@ sph_hrm_coeffs<real_scalar_type> create_gauss_sph_hrm_coeffs(
     const real_scalar_type sqrt_half = std::sqrt(0.5);
     std::normal_distribution<real_scalar_type> norm_dist;
     for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
-        real_matrix_type ps_mat_l = ps(mtpl_l);
+        real_matrix_type ps_mat_l(num_fields,num_fields);
+        ps.get_mtpl(mtpl_l,ps_mat_l);
         real_matrix_type ps_chol_l
             = zero_matrix<real_scalar_type>(num_fields,num_fields);
         size_t info = cholesky_decompose( ps_mat_l, ps_chol_l );

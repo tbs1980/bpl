@@ -23,7 +23,7 @@ template<> struct cxxjobhelper__<double>
   { enum {val=SHARP_DP}; };
 
 template<> struct cxxjobhelper__<float>
-  { enum {val=0}; };
+  { enum {val=100}; };
 
 template<class real_scalar_type>
 class sht {
@@ -62,7 +62,7 @@ public:
                 << " should be a multiple of  12.";
             throw std::invalid_argument(msg.str());
         }
-        size_t const num_sides = (size_t) std::sqrt(double(num_pixels)/double(12));
+        size_t const num_sides = (size_t) std::sqrt(real_scalar_type(num_pixels)/real_scalar_type(12));
         if(is_power_of_2(num_sides) == false){
             std::stringstream msg;
             msg << "number of sides = "
@@ -117,6 +117,7 @@ public:
         int const sharp_nv = 0;
         int num_parallel_transforms = (int) num_fields_s_0;
         int spin = 0;
+        int flags = (int) cxxjobhelper__<real_scalar_type>::val;
         if(num_parallel_transforms >0)
         {
             sharp_execute(SHARP_ALM2MAP,
@@ -127,7 +128,7 @@ public:
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
-                cxxjobhelper__<real_scalar_type>::val,
+                flags,
                 sharp_nv,
                 NULL,
                 NULL
@@ -145,7 +146,7 @@ public:
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
-                cxxjobhelper__<real_scalar_type>::val,
+                flags,
                 sharp_nv,
                 NULL,
                 NULL
@@ -184,6 +185,7 @@ public:
         int const sharp_nv = 0;
         int num_parallel_transforms = (int) num_fields_s_0;
         int spin = 0;
+        int flags = (int) cxxjobhelper__<real_scalar_type>::val;
         if( num_fields_s_0 > 0)
         {
             sharp_execute(SHARP_MAP2ALM,
@@ -194,7 +196,7 @@ public:
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
-                cxxjobhelper__<real_scalar_type>::val,
+                flags,
                 sharp_nv,
                 NULL,
                 NULL
@@ -212,7 +214,7 @@ public:
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
-                cxxjobhelper__<real_scalar_type>::val,
+                flags,
                 sharp_nv,
                 NULL,
                 NULL

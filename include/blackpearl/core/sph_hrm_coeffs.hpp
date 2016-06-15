@@ -68,35 +68,32 @@ public:
             throw std::length_error(msg.str());
         }
 
-        size_t const num_coeffs = num_sph_hrm_coeffs(m_l_max,m_max);
+        m_num_shp_hrm_coeffs = num_sph_hrm_coeffs(m_l_max,m_max);
         m_hrm_coeffs = complex_matrix_type(
-            num_coeffs,
-            num_fields
+            num_fields,
+            m_num_shp_hrm_coeffs
         );
-
-        m_num_shp_hrm_coeffs = num_sph_hrm_coeffs(l_max,m_max);
-
     }
 
     inline complex_scalar_type & operator() (
+        size_t const field,
         size_t const mtpl_l,
-        size_t const mtpl_m,
-        size_t const field
+        size_t const mtpl_m
     ){
         return m_hrm_coeffs(
-            ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
-            field
+            field,
+            ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
         );
     }
 
     inline complex_scalar_type const & operator() (
+        size_t const field,
         size_t const mtpl_l,
-        size_t const mtpl_m,
-        size_t const field
+        size_t const mtpl_m
     ) const {
         return m_hrm_coeffs(
-            ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
-            field
+            field,
+            ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
         );
     }
 
@@ -123,8 +120,8 @@ public:
     ){
         for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
             m_hrm_coeffs(
-                ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
-                fld_i
+                fld_i,
+                ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
             ) = shc_row(fld_i);
         }
     }
@@ -136,8 +133,8 @@ public:
     ) const {
         for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
             shc_row(fld_i) = m_hrm_coeffs(
-                ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l,
-                fld_i
+                fld_i,
+                ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
             );
         }
     }

@@ -23,47 +23,59 @@ void test_create_shc(){
     std::size_t num_fields = 2;
     pow_spec<real_scalar_type> ps(l_max,num_fields);
     pow_spec<real_scalar_type> ps_test_cum(l_max,num_fields);
+    matrix<real_scalar_type> ps_mat_l(num_fields,num_fields);
+    ps_mat_l(0,0) = 1;
+    ps_mat_l(0,1) = 0;
+    ps_mat_l(1,0) = 0;
+    ps_mat_l(1,1) = 2;
     for(size_t mtpl_l=0;mtpl_l<=l_max;++mtpl_l){
-        ps(mtpl_l) = identity_matrix<real_scalar_type>(num_fields);
-        ps_test_cum(mtpl_l) = zero_matrix<real_scalar_type>(num_fields);
+        ps.set_mtpl(mtpl_l,ps_mat_l);
+        ps_test_cum.set_mtpl(mtpl_l,zero_matrix<real_scalar_type>(num_fields));
     }
+
     size_t num_realzns = 1000;
     for(size_t rlzn_i = 0; rlzn_i < num_realzns; ++rlzn_i ){
         sph_hrm_coeffs<real_scalar_type> shc =
             create_gauss_sph_hrm_coeffs(ps,rng);
         pow_spec<real_scalar_type> ps_test =
             extract_pow_spec<real_scalar_type>(shc,shc);
-        for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
-            ps_test_cum(mtpl_l) += ps_test(mtpl_l);
-        }
-    }
-    for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l) {
-        ps_test_cum(mtpl_l) /= real_scalar_type(num_realzns);
-    }
-    for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l) {
-        real_scalar_type err_mc(0.1);
         for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
             for(size_t fld_j = 0; fld_j < num_fields; ++fld_j){
-                if( fld_i == fld_j) {
-                    BOOST_REQUIRE(
-                        std::abs(
-                            ps_test_cum(mtpl_l,fld_i,fld_j)
-                            - real_scalar_type(1)
-                        )
-                        <= err_mc
-                    );
-                }
-                else {
-                    BOOST_REQUIRE(
-                        std::abs(
-                            ps_test_cum(mtpl_l,fld_i,fld_j)
-                            - real_scalar_type(0)
-                        )
-                        <= err_mc
-                    );
+                for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
+                    ps_test_cum(fld_i,fld_j,mtpl_l) +=
+                        ps_test(fld_i,fld_j,mtpl_l);
                 }
             }
         }
+    }
+
+    for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
+        for(size_t fld_j = 0; fld_j < num_fields; ++fld_j){
+            for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
+                ps_test_cum(fld_i,fld_j,mtpl_l) /=
+                    real_scalar_type(num_realzns);
+            }
+        }
+    }
+
+    real_scalar_type err_mc = 0.1;
+    for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
+        BOOST_REQUIRE(
+            std::abs( ps_test_cum(0,0,mtpl_l) - real_scalar_type(1) )
+            <= err_mc
+        );
+        BOOST_REQUIRE(
+            std::abs( ps_test_cum(0,1,mtpl_l) - real_scalar_type(0) )
+            <= err_mc
+        );
+        BOOST_REQUIRE(
+            std::abs( ps_test_cum(1,0,mtpl_l) - real_scalar_type(0) )
+            <= err_mc
+        );
+        BOOST_REQUIRE(
+            std::abs( ps_test_cum(1,1,mtpl_l) - real_scalar_type(2) )
+            <= err_mc
+        );
     }
 }
 
@@ -76,16 +88,12 @@ void test_extract_pow_spec() {
     size_t const l_max = 32;
     size_t const m_max = l_max;
     size_t const num_fields = 2;
-    pow_spec<real_scalar_type> ps(l_max,num_fields);
-    for(size_t mtpl_l=0;mtpl_l<=l_max;++mtpl_l){
-        ps(mtpl_l) = identity_matrix<real_scalar_type>(num_fields)*4.;
-    }
 
     sph_hrm_coeffs<real_scalar_type> shc(l_max,m_max,num_fields);
     for(size_t mtpl_m = 0; mtpl_m <= m_max; ++mtpl_m){
         for(size_t mtpl_l = mtpl_m; mtpl_l <= l_max; ++mtpl_l) {
-            shc(mtpl_l,mtpl_m,0) = complex_scalar_type(1.,0.);
-            shc(mtpl_l,mtpl_m,1) = complex_scalar_type(1.,0.);
+            shc(0,mtpl_l,mtpl_m) = complex_scalar_type(1.,0.);
+            shc(1,mtpl_l,mtpl_m) = complex_scalar_type(1.,0.);
         }
     }
 
@@ -97,7 +105,7 @@ void test_extract_pow_spec() {
             for(size_t fld_j = 0; fld_j < num_fields; ++fld_j){
                 BOOST_REQUIRE(
                     std::abs(
-                        ps_test(mtpl_l,fld_i,fld_j)
+                        ps_test(fld_i,fld_j,mtpl_l)
                         - real_scalar_type(1)
                     )
                     <= eps
