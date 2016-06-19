@@ -8,15 +8,15 @@
 #include <blackpearl/core/sph_data.hpp>
 
 template<typename real_scalar_type>
-void test_shp_data(){
+void test_sph_data(){
     using namespace blackpearl::core;
     std::size_t n_side = 2048;
     std::size_t num_pixels = 12*n_side*n_side;
     std::vector<size_t> spins = {0,0,2,2,2,2};
-    shp_data<real_scalar_type> data(spins,num_pixels);
+    sph_data<real_scalar_type> data(spins,num_pixels);
 }
 
-BOOST_AUTO_TEST_CASE(shp_data){
-    test_shp_data<float>();
-    test_shp_data<double>();
+BOOST_AUTO_TEST_CASE(sph_data){
+    test_sph_data<float>();
+    test_sph_data<double>();
 }

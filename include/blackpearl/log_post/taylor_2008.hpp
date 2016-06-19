@@ -8,9 +8,13 @@
 #include <sstream>
 #include <string>
 #include <boost/numeric/ublas/vector.hpp>
-#include "sph_data.hpp"
-#include "sph_hrm_coeffs.hpp"
-#include "sph_prec_mat.hpp"
+#include "../core/pow_spec.hpp"
+#include "../core/shc_ps_utils.hpp"
+#include "../core/sht.hpp"
+#include "../core/sph_data.hpp"
+#include "../core/sph_hrm_coeffs.hpp"
+#include "../core/sph_prec_mat.hpp"
+#include "../core/win_func.hpp"
 
 namespace blackpearl{ namespace log_post {
 
@@ -22,13 +26,14 @@ public:
 
     typedef boost::numeric::ublas::vector<real_scalar_type> real_vector_type;
 
-    static const indexType num_mc_samples = 1000;
+    static const size_t num_mc_samples = 1000;
 
-    taylor_2008(
-        blackpearl::core::shp_data<real_scalar_type> const & data,
+    taylor_2008 (
+        blackpearl::core::sph_data<real_scalar_type> const & data,
         blackpearl::core::sph_diag_prec_mat<real_scalar_type> const & p_mat,
         blackpearl::core::win_func<real_scalar_type> const & w_func
     ) throw() {
+        using namespace blackpearl::core;
         if(data.num_fields() != p_mat.num_fields()){
             std::stringstream msg;
             msg << "The number of fields"
@@ -53,13 +58,13 @@ public:
         m_l_max = w_func.l_max();
         m_m_max = w_func.l_max();
         size_t const num_real_alms
-            = blackpearl::core::sph_hrm_coeffs<real_scalar_type>(
+            = sph_hrm_coeffs<real_scalar_type>(
                 m_num_fields,
                 m_l_max,
                 m_m_max
             );
         size_t const num_real_cls
-            = blackpearl::core::pow_spec<real_scalar_type>(
+            = pow_spec<real_scalar_type>(
                 m_num_fields,
                 m_l_max
             );
@@ -67,17 +72,29 @@ public:
     }
 
     real_scalar_type log_post(real_vector_type const & pos_q){
+        using namespace blackpearl::core;
         BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
+        sph_hrm_coeffs<real_scalar_type> alms(m_num_fields, m_l_max, m_m_max);
+        pow_spec<real_scalar_type> cls(m_num_fields, m_l_max);
+        convert_to_coeffs<real_scalar_type>(pos_q, alms, cls);
 
     }
 
     real_vector_type grad_log_post(real_vector_type const & pos_q) {
+        using namespace blackpearl::core;
         BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
-        blackpearl::core::sph_hrm_coeffs<real_scalar_type> alms()
+
+        sph_hrm_coeffs<real_scalar_type> alms(
+            m_num_fields,
+            m_l_max,
+            m_m_max
+        );
+        pow_spec<real_scalar_type> cls(m_num_fields,m_l_max);
+        convert_to_coeffs<real_scalar_type>(pos_q, alms, cls);
     }
 
 private:
-    blackpearl::core::shp_data<real_scalar_type> m_data;
+    blackpearl::core::sph_data<real_scalar_type> m_data;
     blackpearl::core::sph_diag_prec_mat<real_scalar_type> m_prec_mat;
     blackpearl::core::win_func<real_scalar_type> m_win_func;
     size_t m_num_fields;

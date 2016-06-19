@@ -23,7 +23,7 @@ void test_sht(){
     std::vector<size_t> spins = {0};//,0};//,2,2,2,2};
     size_t num_fields = spins.size();
     sph_hrm_coeffs<real_scalar_type> sh(num_fields,l_max,m_max);
-    shp_data<real_scalar_type> data(spins,num_pixels);
+    sph_data<real_scalar_type> data(spins,num_pixels);
     std::mt19937 rng(1234);
     std::uniform_real_distribution<real_scalar_type> uni_real_dist;
     for(size_t fld_i = 0; fld_i < num_fields; ++fld_i) {
@@ -33,7 +33,7 @@ void test_sht(){
     }
     sht<real_scalar_type> sht_test(num_fields,l_max,m_max,num_pixels);
     sht_test.analyse(data,sh);
-    shp_data<real_scalar_type> data_test(spins,num_pixels);
+    sph_data<real_scalar_type> data_test(spins,num_pixels);
     sht_test.synthesise(sh,data_test);
     real_scalar_type exp_rms
         = std::numeric_limits<real_scalar_type>::epsilon()*1e12;
@@ -64,7 +64,7 @@ void test_sht_unit_alms(){
             shcfs(0,mtpl_l,mtpl_m) = complex_scalar_type (1,0);
         }
     }
-    shp_data<real_scalar_type> data(spins,num_pixels);
+    sph_data<real_scalar_type> data(spins,num_pixels);
     sht<real_scalar_type> sht_test(num_fields,l_max,m_max,num_pixels);
     sht_test.synthesise(shcfs,data);
 
@@ -93,12 +93,12 @@ void test_sht_unit_alms(){
 
 
 
-BOOST_AUTO_TEST_CASE(shp_data){
+BOOST_AUTO_TEST_CASE(sph_data){
     test_sht<float>();
     test_sht<double>();
 }
 
-BOOST_AUTO_TEST_CASE(shp_data_unit_alms){
+BOOST_AUTO_TEST_CASE(sph_data_unit_alms){
     test_sht_unit_alms<float>();
     test_sht_unit_alms<double>();
 }

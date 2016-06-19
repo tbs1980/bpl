@@ -110,7 +110,7 @@ public:
 
     void synthesise(
         sph_hrm_coeffs<real_scalar_type> const & alms,
-        shp_data<real_scalar_type> & maps
+        sph_data<real_scalar_type> & maps
     ) const {
         size_t const num_alms = alms.num_sph_hrm_coeffs();
         size_t const num_pixels = maps.num_pixels();
@@ -176,7 +176,7 @@ public:
     }
 
     void analyse(
-        shp_data<real_scalar_type> const & maps,
+        sph_data<real_scalar_type> const & maps,
         sph_hrm_coeffs<real_scalar_type> & alms
     ) const {
         size_t const num_alms = alms.num_sph_hrm_coeffs();

@@ -21,8 +21,8 @@ void test_create_shc(){
     std::mt19937 rng(1234);
     std::size_t l_max = 32;
     std::size_t num_fields = 2;
-    pow_spec<real_scalar_type> ps(l_max,num_fields);
-    pow_spec<real_scalar_type> ps_test_cum(l_max,num_fields);
+    pow_spec<real_scalar_type> ps(num_fields,l_max);
+    pow_spec<real_scalar_type> ps_test_cum(num_fields,l_max);
     matrix<real_scalar_type> ps_mat_l(num_fields,num_fields);
     ps_mat_l(0,0) = 1;
     ps_mat_l(0,1) = 0;
@@ -121,7 +121,7 @@ void test_convert(){
     size_t const num_fields = 5;
 
     sph_hrm_coeffs<real_scalar_type> shc(num_fields,l_max,m_max);
-    pow_spec<real_scalar_type> pspec(l_max,num_fields);
+    pow_spec<real_scalar_type> pspec(num_fields,l_max);
 
     size_t num_rac = shc.num_real_indep_coeffs(num_fields,l_max,m_max);
     size_t num_rpc = pspec.num_real_indep_coeffs(num_fields,l_max);
@@ -154,7 +154,7 @@ void test_convert(){
     }
 
     sph_hrm_coeffs<real_scalar_type> shc_test(num_fields,l_max,m_max);
-    pow_spec<real_scalar_type> pspec_test(l_max,num_fields);
+    pow_spec<real_scalar_type> pspec_test(num_fields,l_max);
     convert_to_coeffs<real_scalar_type>(pos_q,shc_test,pspec_test);
 
     for(size_t fld_i = 0; fld_i < num_fields; ++fld_i)  {

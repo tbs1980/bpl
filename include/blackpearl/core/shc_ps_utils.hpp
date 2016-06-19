@@ -64,7 +64,7 @@ pow_spec<real_scalar_type> extract_pow_spec(
     size_t const l_max = shc_1.l_max();
     size_t const m_max = shc_1.m_max();
     size_t const num_fields = shc_1.num_fields();
-    pow_spec<real_scalar_type> ps(l_max,num_fields);
+    pow_spec<real_scalar_type> ps(num_fields,l_max);
     for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
         for(size_t fld_j = fld_i; fld_j < num_fields; ++fld_j){
             for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){

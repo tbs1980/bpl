@@ -15,7 +15,7 @@
 namespace blackpearl { namespace core {
 
 template<class real_scalar_type>
-class shp_data{
+class sph_data{
 public:
     static_assert(
         std::is_floating_point<real_scalar_type>::value,
@@ -24,7 +24,7 @@ public:
 
     typedef boost::numeric::ublas::matrix<real_scalar_type> real_matrix_type;
 
-    shp_data(
+    sph_data(
         std::vector<std::size_t> spins,
         std::size_t const num_pixels
     ) throw()

@@ -37,9 +37,9 @@ public:
             - (size_n - ind_i)*( (size_n - ind_i)-1 )/2 + ind_j ;
     }
 
-    pow_spec(size_t const l_max,size_t const num_fields) throw()
-    :m_l_max(l_max)
-    ,m_num_fields(num_fields){
+    pow_spec(size_t const num_fields,size_t const l_max) throw()
+    :m_num_fields(num_fields)
+    ,m_l_max(l_max){
         BOOST_ASSERT_MSG(
             l_max <= BLACKPEARL_MAX_LMAX,
             "l_max too big. Please modify the config.hpp and recompile."
@@ -118,8 +118,8 @@ public:
     }
 
 private:
-    size_t m_l_max;
     size_t m_num_fields;
+    size_t m_l_max;
     real_matrix_type m_pow_specs;
 };
 
