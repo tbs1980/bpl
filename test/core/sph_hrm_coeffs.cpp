@@ -17,7 +17,7 @@ void test_shp_hrm_coeffs(){
     size_t l_max(6143);
     size_t m_max(l_max);
     size_t num_fields(6);
-    sph_hrm_coeffs<real_scalar_type> sh(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> sh(num_fields,l_max,m_max);
 }
 
 template<typename real_scalar_type>
@@ -28,7 +28,7 @@ void test_shp_hrm_coeffs_row(){
     size_t l_max(32);
     size_t m_max(l_max);
     size_t num_fields(6);
-    sph_hrm_coeffs<real_scalar_type> sh(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> sh(num_fields,l_max,m_max);
 
     vector<complex_scalar_type> v(num_fields);
     sh.get_row(0,0,v);

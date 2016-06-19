@@ -45,13 +45,17 @@ public:
     }
 
     sph_hrm_coeffs(
+        std::size_t const num_fields,
         std::size_t const l_max,
-        std::size_t const m_max,
-        std::size_t const num_fields
+        std::size_t const m_max
     ) throw()
-    :m_l_max(l_max)
-    ,m_m_max(m_max)
-    ,m_num_fields(num_fields){
+    :m_num_fields(num_fields)
+    ,m_l_max(l_max)
+    ,m_m_max(m_max){
+        BOOST_ASSERT_MSG(
+            m_num_fields <= BLACKPEARL_MAX_NUM_FIELDS,
+            "num_fields too big. Please modify the config.hpp and recompile."
+        );
         BOOST_ASSERT_MSG(
             l_max <= BLACKPEARL_MAX_LMAX,
             "l_max too big. Please modify the config.hpp and recompile."
@@ -59,10 +63,6 @@ public:
         BOOST_ASSERT_MSG(
             m_max <= BLACKPEARL_MAX_LMAX,
             "m_max too big. Please modify the config.hpp and recompile."
-        );
-        BOOST_ASSERT_MSG(
-            m_num_fields <= BLACKPEARL_MAX_NUM_FIELDS,
-            "num_fields too big. Please modify the config.hpp and recompile."
         );
 
         if( m_max > l_max ){
@@ -155,9 +155,9 @@ public:
         return m_hrm_coeffs;
     }
 private:
+    size_t m_num_fields;
     size_t m_l_max;
     size_t m_m_max;
-    size_t m_num_fields;
     size_t m_num_shp_hrm_coeffs;
     complex_matrix_type m_hrm_coeffs;
 };

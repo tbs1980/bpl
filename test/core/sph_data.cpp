@@ -13,11 +13,10 @@ void test_shp_data(){
     std::size_t n_side = 2048;
     std::size_t num_pixels = 12*n_side*n_side;
     std::vector<size_t> spins = {0,0,2,2,2,2};
-    shp_data<real_scalar_type> data(num_pixels,spins);
+    shp_data<real_scalar_type> data(spins,num_pixels);
 }
 
 BOOST_AUTO_TEST_CASE(shp_data){
     test_shp_data<float>();
     test_shp_data<double>();
 }
-

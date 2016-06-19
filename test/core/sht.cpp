@@ -22,8 +22,8 @@ void test_sht(){
     size_t num_pixels = 12*n_side*n_side;
     std::vector<size_t> spins = {0};//,0};//,2,2,2,2};
     size_t num_fields = spins.size();
-    sph_hrm_coeffs<real_scalar_type> sh(l_max,m_max,num_fields);
-    shp_data<real_scalar_type> data(num_pixels,spins);
+    sph_hrm_coeffs<real_scalar_type> sh(num_fields,l_max,m_max);
+    shp_data<real_scalar_type> data(spins,num_pixels);
     std::mt19937 rng(1234);
     std::uniform_real_distribution<real_scalar_type> uni_real_dist;
     for(size_t fld_i = 0; fld_i < num_fields; ++fld_i) {
@@ -31,9 +31,9 @@ void test_sht(){
             data(fld_i,fld_j) = uni_real_dist(rng);
         }
     }
-    sht<real_scalar_type> sht_test(l_max,m_max,num_pixels,num_fields);
+    sht<real_scalar_type> sht_test(num_fields,l_max,m_max,num_pixels);
     sht_test.analyse(data,sh);
-    shp_data<real_scalar_type> data_test(num_pixels,spins);
+    shp_data<real_scalar_type> data_test(spins,num_pixels);
     sht_test.synthesise(sh,data_test);
     real_scalar_type exp_rms
         = std::numeric_limits<real_scalar_type>::epsilon()*1e12;
@@ -58,17 +58,17 @@ void test_sht_unit_alms(){
     size_t num_pixels = 12*n_side*n_side;
     std::vector<size_t> spins = {0};//,0};//,2,2,2,2};
     size_t num_fields = spins.size();
-    sph_hrm_coeffs<real_scalar_type> shcfs(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> shcfs(num_fields,l_max,m_max);
     for(size_t mtpl_m = 0; mtpl_m <= m_max;++mtpl_m) {
         for(size_t mtpl_l = mtpl_m; mtpl_l <= l_max;++mtpl_l) {
             shcfs(0,mtpl_l,mtpl_m) = complex_scalar_type (1,0);
         }
     }
-    shp_data<real_scalar_type> data(num_pixels,spins);
-    sht<real_scalar_type> sht_test(l_max,m_max,num_pixels,num_fields);
+    shp_data<real_scalar_type> data(spins,num_pixels);
+    sht<real_scalar_type> sht_test(num_fields,l_max,m_max,num_pixels);
     sht_test.synthesise(shcfs,data);
 
-    sph_hrm_coeffs<real_scalar_type> shcfs_test(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> shcfs_test(num_fields,l_max,m_max);
     sht_test.analyse(data,shcfs_test);
     real_scalar_type eps = std::numeric_limits<real_scalar_type>::epsilon();
     for(size_t mtpl_m = 0; mtpl_m <= m_max;++mtpl_m) {

@@ -25,12 +25,12 @@ public:
     typedef boost::numeric::ublas::matrix<real_scalar_type> real_matrix_type;
 
     shp_data(
-        std::size_t const num_pixels,
-        std::vector<std::size_t> spins
+        std::vector<std::size_t> spins,
+        std::size_t const num_pixels
     ) throw()
-    :m_num_pixels(num_pixels)
-    ,m_spins(spins)
-    ,m_num_fields( spins.size() ){
+    :m_spins(spins)
+    ,m_num_fields( spins.size() )
+    ,m_num_pixels(num_pixels){
         BOOST_ASSERT_MSG(
             num_pixels <= BLACKPEARL_MAX_NUM_PIXELS,
             "num_pixels too big. Please modify the config.hpp and recompile."
@@ -117,9 +117,9 @@ public:
     }
 
 private:
-    std::size_t m_num_pixels;
     std::vector<std::size_t> m_spins;
     std::size_t m_num_fields;
+    std::size_t m_num_pixels;
     real_matrix_type m_data;
     std::size_t m_num_spin_zero_fields;
     std::size_t m_num_spin_two_fields;

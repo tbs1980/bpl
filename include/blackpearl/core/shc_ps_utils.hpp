@@ -102,7 +102,7 @@ sph_hrm_coeffs<real_scalar_type> create_gauss_sph_hrm_coeffs(
     size_t const l_max = ps.l_max();
     size_t const m_max = l_max;
     size_t const num_fields = ps.num_fields();
-    sph_hrm_coeffs<real_scalar_type> shc(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> shc(num_fields,l_max,m_max);
     const real_scalar_type sqrt_half = std::sqrt(0.5);
     std::normal_distribution<real_scalar_type> norm_dist;
     for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){

@@ -84,7 +84,7 @@ void test_extract_pow_spec() {
     size_t const m_max = l_max;
     size_t const num_fields = 2;
 
-    sph_hrm_coeffs<real_scalar_type> shc(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> shc(num_fields,l_max,m_max);
     for(size_t mtpl_m = 0; mtpl_m <= m_max; ++mtpl_m){
         for(size_t mtpl_l = mtpl_m; mtpl_l <= l_max; ++mtpl_l) {
             shc(0,mtpl_l,mtpl_m) = complex_scalar_type(1.,0.);
@@ -120,7 +120,7 @@ void test_convert(){
     size_t const m_max = l_max;
     size_t const num_fields = 5;
 
-    sph_hrm_coeffs<real_scalar_type> shc(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> shc(num_fields,l_max,m_max);
     pow_spec<real_scalar_type> pspec(l_max,num_fields);
 
     size_t num_rac = shc.num_real_indep_coeffs(num_fields,l_max,m_max);
@@ -153,7 +153,7 @@ void test_convert(){
         BOOST_REQUIRE(ind_i == (size_t) pos_q(ind_i));
     }
 
-    sph_hrm_coeffs<real_scalar_type> shc_test(l_max,m_max,num_fields);
+    sph_hrm_coeffs<real_scalar_type> shc_test(num_fields,l_max,m_max);
     pow_spec<real_scalar_type> pspec_test(l_max,num_fields);
     convert_to_coeffs<real_scalar_type>(pos_q,shc_test,pspec_test);
 

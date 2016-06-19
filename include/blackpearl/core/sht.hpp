@@ -46,15 +46,33 @@ public:
     }
 
     sht(
+        size_t const num_fields,
         size_t const l_max,
         size_t const m_max,
-        size_t const num_pixels,
-        size_t const num_fields
+        size_t const num_pixels
     ) throw()
-    :m_l_max(l_max)
+    :m_num_fields(num_fields)
+    ,m_l_max(l_max)
     ,m_m_max(m_max)
     ,m_num_pixels(num_pixels)
-    ,m_num_fields(num_fields){
+    {
+        BOOST_ASSERT_MSG(
+            m_num_fields <= BLACKPEARL_MAX_NUM_FIELDS,
+            "num_fields too big. Please modify the config.hpp and recompile."
+        );
+        BOOST_ASSERT_MSG(
+            l_max <= BLACKPEARL_MAX_LMAX,
+            "l_max too big. Please modify the config.hpp and recompile."
+        );
+        BOOST_ASSERT_MSG(
+            m_max <= BLACKPEARL_MAX_LMAX,
+            "m_max too big. Please modify the config.hpp and recompile."
+        );
+        BOOST_ASSERT_MSG(
+            num_pixels <= BLACKPEARL_MAX_NUM_PIXELS,
+            "num_pixels too big. Please modify the config.hpp and recompile."
+        );
+
         if(num_pixels % size_t(12) !=  size_t(0)){
             std::stringstream msg;
             msg << "number of pixels = "
@@ -226,10 +244,10 @@ public:
     }
 
 private:
+    size_t m_num_fields;
     size_t m_l_max;
     size_t m_m_max;
     size_t m_num_pixels;
-    size_t m_num_fields;
     sharp_alm_info * m_p_alm_info;
     sharp_geom_info * m_p_geom_info;
 };
