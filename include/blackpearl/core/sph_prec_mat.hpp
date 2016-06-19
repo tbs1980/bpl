@@ -23,18 +23,18 @@ public:
     typedef boost::numeric::ublas::matrix<real_scalar_type> real_matrix_type;
 
     sph_diag_prec_mat(
-        size_t const num_pixels,
-        size_t const num_fields
+        size_t const num_fields,
+        size_t const num_pixels
     ) throw()
-    :m_num_pixels(num_pixels)
-    ,m_num_fields(num_fields){
-        BOOST_ASSERT_MSG(
-            num_pixels <= BLACKPEARL_MAX_NUM_PIXELS,
-            "num_pixels too big. Please modify the config.hpp and recompile."
-        );
+    :m_num_fields(num_fields)
+    ,m_num_pixels(num_pixels){
         BOOST_ASSERT_MSG(
             num_fields <= BLACKPEARL_MAX_NUM_FIELDS,
             "num_fields too big. Please modify the config.hpp and recompile."
+        );
+        BOOST_ASSERT_MSG(
+            num_pixels <= BLACKPEARL_MAX_NUM_PIXELS,
+            "num_pixels too big. Please modify the config.hpp and recompile."
         );
         if( num_pixels == std::size_t(0) ){
             std::stringstream msg;
@@ -67,7 +67,7 @@ public:
     }
 
     inline size_t num_fields() const {
-        return m_num_pixels;
+        return m_num_fields;
     }
 
     inline size_t num_pixels() const{
@@ -75,8 +75,8 @@ public:
     }
 
 private:
-    size_t m_num_pixels;
     size_t m_num_fields;
+    size_t m_num_pixels;
     real_matrix_type m_prec_mat;
 };
 

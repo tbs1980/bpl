@@ -101,7 +101,7 @@ public:
     }
 
     inline size_t num_fields() const {
-        return m_num_pixels;
+        return m_num_fields;
     }
 
     inline size_t num_spin_zero_fields() const {
@@ -114,6 +114,14 @@ public:
 
     inline size_t num_pixels() const{
         return m_num_pixels;
+    }
+
+    inline real_matrix_type const & data() const {
+        return m_data;
+    }
+
+    inline real_matrix_type & data() {
+        return m_data;
     }
 
 private:

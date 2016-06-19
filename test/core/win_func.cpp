@@ -10,7 +10,7 @@ void test_win_func(){
     using namespace blackpearl::core;
     std::size_t l_max = 2048;
     std::size_t num_fields = 6;
-    win_func<real_scalar_type> ps(l_max,num_fields);
+    win_func<real_scalar_type> w_func(num_fields,l_max);
 }
 
 BOOST_AUTO_TEST_CASE(win_func){

@@ -32,7 +32,10 @@ public:
         blackpearl::core::sph_data<real_scalar_type> const & data,
         blackpearl::core::sph_diag_prec_mat<real_scalar_type> const & p_mat,
         blackpearl::core::win_func<real_scalar_type> const & w_func
-    ) throw() {
+    ) throw()
+    :m_data(data)
+    ,m_prec_mat(p_mat)
+    ,m_win_func(w_func){
         using namespace blackpearl::core;
         if(data.num_fields() != p_mat.num_fields()){
             std::stringstream msg;
@@ -58,13 +61,13 @@ public:
         m_l_max = w_func.l_max();
         m_m_max = w_func.l_max();
         size_t const num_real_alms
-            = sph_hrm_coeffs<real_scalar_type>(
+            = sph_hrm_coeffs<real_scalar_type>::num_real_indep_coeffs(
                 m_num_fields,
                 m_l_max,
                 m_m_max
             );
         size_t const num_real_cls
-            = pow_spec<real_scalar_type>(
+            = pow_spec<real_scalar_type>::num_real_indep_coeffs(
                 m_num_fields,
                 m_l_max
             );

@@ -15,16 +15,16 @@ public:
         "The real_scalar_type should be a floating point type"
     );
     typedef boost::numeric::ublas::matrix<real_scalar_type> real_matrix_type;
-    win_func(size_t const l_max,size_t const num_fields) throw()
-    :m_l_max(l_max)
-    ,m_num_fields(num_fields){
-        BOOST_ASSERT_MSG(
-            l_max <= BLACKPEARL_MAX_LMAX,
-            "l_max too big. Please modify the config.hpp and recompile."
-        );
+    win_func(size_t const num_fields,size_t const l_max) throw()
+    :m_num_fields(num_fields)
+    ,m_l_max(l_max){
         BOOST_ASSERT_MSG(
             m_num_fields <= BLACKPEARL_MAX_NUM_FIELDS,
             "num_fields too big. Please modify the config.hpp and recompile."
+        );
+        BOOST_ASSERT_MSG(
+            l_max <= BLACKPEARL_MAX_LMAX,
+            "l_max too big. Please modify the config.hpp and recompile."
         );
         m_win_func = real_matrix_type(num_fields,l_max+1);
     }
@@ -49,8 +49,8 @@ public:
         return m_num_fields;
     }
 private:
-    size_t m_l_max;
     size_t m_num_fields;
+    size_t m_l_max;
     real_matrix_type m_win_func;
 };
 
