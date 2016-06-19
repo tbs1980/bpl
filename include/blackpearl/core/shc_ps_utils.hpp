@@ -58,27 +58,26 @@ size_t cholesky_decompose(
 
 template<typename real_scalar_type>
 pow_spec<real_scalar_type> extract_pow_spec(
-    sph_hrm_coeffs<real_scalar_type> const & shc_1,
-    sph_hrm_coeffs<real_scalar_type> const & shc_2
+    sph_hrm_coeffs<real_scalar_type> const & shc
 ) {
-    size_t const l_max = shc_1.l_max();
-    size_t const m_max = shc_1.m_max();
-    size_t const num_fields = shc_1.num_fields();
+    size_t const l_max = shc.l_max();
+    size_t const m_max = shc.m_max();
+    size_t const num_fields = shc.num_fields();
     pow_spec<real_scalar_type> ps(num_fields,l_max);
     for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
         for(size_t fld_j = fld_i; fld_j < num_fields; ++fld_j){
             for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
                 ps(fld_i,fld_j,mtpl_l) =
-                    shc_1(fld_i,mtpl_l,0).real()*shc_2(fld_j,mtpl_l,0).real();
+                    shc(fld_i,mtpl_l,0).real()*shc(fld_j,mtpl_l,0).real();
             }
             for(size_t mtpl_m = 1; mtpl_m <= m_max; ++mtpl_m){
                 for(size_t mtpl_l = mtpl_m; mtpl_l <= l_max; ++mtpl_l){
                     ps(fld_i,fld_j,mtpl_l) +=
                         2*(
-                            shc_1(fld_i,mtpl_l,mtpl_m).real()*
-                            shc_2(fld_j,mtpl_l,mtpl_m).real()
-                            + shc_1(fld_i,mtpl_l,mtpl_m).imag()*
-                            shc_2(fld_j,mtpl_l,mtpl_m).imag()
+                            shc(fld_i,mtpl_l,mtpl_m).real()*
+                            shc(fld_j,mtpl_l,mtpl_m).real()
+                            + shc(fld_i,mtpl_l,mtpl_m).imag()*
+                            shc(fld_j,mtpl_l,mtpl_m).imag()
                         );
                 }
             }

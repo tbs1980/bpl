@@ -37,7 +37,7 @@ void test_create_shc(){
         sph_hrm_coeffs<real_scalar_type> shc =
             create_gauss_sph_hrm_coeffs(ps,rng);
         pow_spec<real_scalar_type> ps_test =
-            extract_pow_spec<real_scalar_type>(shc,shc);
+            extract_pow_spec<real_scalar_type>(shc);
         for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
             for(size_t fld_j = fld_i; fld_j < num_fields; ++fld_j){
                 for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
@@ -93,7 +93,7 @@ void test_extract_pow_spec() {
     }
 
     pow_spec<real_scalar_type> ps_test =
-        extract_pow_spec<real_scalar_type>(shc,shc);
+        extract_pow_spec<real_scalar_type>(shc);
     real_scalar_type eps = std::numeric_limits<real_scalar_type>::epsilon();
     for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
         for(size_t fld_j = fld_i; fld_j < num_fields; ++fld_j){
