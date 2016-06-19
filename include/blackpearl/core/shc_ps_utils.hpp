@@ -84,9 +84,6 @@ pow_spec<real_scalar_type> extract_pow_spec(
             }
             for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
                 ps(fld_i,fld_j,mtpl_l) /= real_scalar_type(2*mtpl_l+1);
-                if(fld_i != fld_j){
-                    ps(fld_j,fld_i,mtpl_l) = ps(fld_i,fld_j,mtpl_l);
-                }
             }
         }
     }
@@ -137,6 +134,99 @@ sph_hrm_coeffs<real_scalar_type> create_gauss_sph_hrm_coeffs(
         }
     }
     return shc;
+}
+
+template<typename real_scalar_type>
+void convert_to_real_vector(
+    blackpearl::core::sph_hrm_coeffs<real_scalar_type> const & shc,
+    blackpearl::core::pow_spec<real_scalar_type> const & pspec,
+    boost::numeric::ublas::vector<real_scalar_type> & pos_q
+){
+    using namespace boost::numeric::ublas;
+    using namespace blackpearl::core;
+    static_assert(
+        std::is_floating_point<real_scalar_type>::value,
+        "The real_scalar_type should be a floating point type"
+    );
+
+    BOOST_ASSERT(shc.l_max() == pspec.l_max());
+    BOOST_ASSERT(shc.num_fields() == pspec.num_fields());
+
+    size_t num_real_alms = shc.num_real_indep_coeffs(
+        shc.num_fields(),
+        shc.l_max(),
+        shc.m_max()
+    );
+
+    size_t num_real_cls = pspec.num_real_indep_coeffs(
+        pspec.num_fields(),
+        pspec.l_max()
+    );
+
+    BOOST_ASSERT(pos_q.size() == num_real_alms + num_real_cls);
+
+    std::complex<real_scalar_type> const * p_shc_data = & shc(0,0,0);
+    real_scalar_type const * p_real_shc_data =
+        reinterpret_cast<real_scalar_type const *>(p_shc_data);
+    real_scalar_type const * p_pspec_data = & pspec(0,0,0);
+    real_scalar_type * p_pos_q = & pos_q(0);
+    std::copy(
+        p_real_shc_data,
+        p_real_shc_data + num_real_alms,
+        p_pos_q
+    );
+    std::copy(
+        p_pspec_data,
+        p_pspec_data + num_real_cls,
+        p_pos_q + num_real_alms
+    );
+}
+
+template<typename real_scalar_type>
+void convert_to_coeffs(
+    boost::numeric::ublas::vector<real_scalar_type> const & pos_q,
+    blackpearl::core::sph_hrm_coeffs<real_scalar_type> & shc,
+    blackpearl::core::pow_spec<real_scalar_type> & pspec
+){
+    using namespace boost::numeric::ublas;
+    using namespace blackpearl::core;
+    static_assert(
+        std::is_floating_point<real_scalar_type>::value,
+        "The real_scalar_type should be a floating point type"
+    );
+
+    BOOST_ASSERT(shc.l_max() == pspec.l_max());
+    BOOST_ASSERT(shc.num_fields() == pspec.num_fields());
+
+    size_t num_real_alms = shc.num_real_indep_coeffs(
+        shc.num_fields(),
+        shc.l_max(),
+        shc.m_max()
+    );
+
+    size_t num_real_cls = pspec.num_real_indep_coeffs(
+        pspec.num_fields(),
+        pspec.l_max()
+    );
+
+    BOOST_ASSERT(pos_q.size() == num_real_alms + num_real_cls);
+
+    real_scalar_type const * p_pos_q = & pos_q(0);
+    std::complex<real_scalar_type> const * p_cplx_q =
+        reinterpret_cast< std::complex<real_scalar_type> const *>(p_pos_q);
+    std::complex<real_scalar_type> * p_shc_data = & shc(0,0,0);
+    real_scalar_type * p_pspec_data = & pspec(0,0,0);
+
+    std::copy(
+        p_cplx_q,
+        p_cplx_q + num_real_alms/2,
+        p_shc_data
+    );
+    std::copy(
+        p_pos_q + num_real_alms,
+        p_pos_q + num_real_alms + num_real_cls,
+        p_pspec_data
+    );
 }
 
 }}

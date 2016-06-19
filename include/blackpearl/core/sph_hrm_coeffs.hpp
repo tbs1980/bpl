@@ -36,6 +36,14 @@ public:
             +(l_max+size_t(1))*(l_max-m_max);
     }
 
+    static size_t num_real_indep_coeffs(
+        size_t const num_fields,
+        size_t const l_max,
+        size_t const m_max
+    ) {
+        return 2*num_sph_hrm_coeffs(l_max,m_max)*num_fields;
+    }
+
     sph_hrm_coeffs(
         std::size_t const l_max,
         std::size_t const m_max,
@@ -137,6 +145,14 @@ public:
                 ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
             );
         }
+    }
+
+    inline complex_matrix_type const & data() const {
+        return m_hrm_coeffs;
+    }
+
+    inline complex_matrix_type & data() {
+        return m_hrm_coeffs;
     }
 private:
     size_t m_l_max;
