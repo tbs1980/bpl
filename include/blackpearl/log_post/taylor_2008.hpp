@@ -80,6 +80,14 @@ bool compute_inverse(
 }
 
 template<typename real_scalar_type>
+bool compute_log(
+    boost::numeric::ublas::matrix<real_scalar_type> const & mat,
+    boost::numeric::ublas::matrix<real_scalar_type> & log_mat
+){
+
+}
+
+template<typename real_scalar_type>
 class taylor_2008{
 public:
     static_assert(std::is_floating_point<real_scalar_type>::value,
@@ -140,32 +148,15 @@ public:
         using namespace boost::numeric::ublas;
         BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
         sph_hrm_coeffs<real_scalar_type> shc_a(m_num_fields, m_l_max, m_m_max);
-        pow_spec<real_scalar_type> ps_c(m_num_fields, m_l_max);
-        convert_to_coeffs<real_scalar_type>(pos_q, shc_a, ps_c);
+        pow_spec<real_scalar_type> ps_g(m_num_fields, m_l_max);
+        convert_to_coeffs<real_scalar_type>(pos_q, shc_a, ps_g);
         pow_spec<real_scalar_type> ps_sigma =  extract_pow_spec(shc_a);
+
         real_scalar_type log_post = 0;
         for(size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
-            matrix<real_scalar_type> c_l(m_num_fields,m_num_fields);
+            matrix<real_scalar_type> g_l(m_num_fields,m_num_fields);
+
             matrix<real_scalar_type> sigma_l(m_num_fields,m_num_fields);
-            matrix<real_scalar_type> c_inv_l(m_num_fields,m_num_fields);
-            matrix<real_scalar_type> c_inv_sigma_l(m_num_fields,m_num_fields);
-            ps_c.get_mtpl(mtpl_l,c_l);
-            ps_sigma.get_mtpl(mtpl_l,sigma_l);
-            real_scalar_type fact_l = real_scalar_type(2*mtpl_l+1);
-            real_scalar_type log_det_c_l
-                = compute_inverse<real_scalar_type>(c_l);
-            real_scalar_type tr_c_l
-                = compute_trace<real_scalar_type>(c_l);
-            bool has_inv = compute_inverse<real_scalar_type>(c_l,c_inv_l);
-            BOOST_ASSERT(has_inv == true);
-            c_inv_sigma_l = prod(c_inv_l,sigma_l);
-            real_scalar_type tr_cl_inv_sigma_l
-                = compute_trace<real_scalar_type>(c_inv_sigma_l);
-            log_post += (
-                fact_l*log_det_c_l
-                + 0.5*fact_l*tr_cl_inv_sigma_l
-                + fact_l*tr_c_l
-            );
         }
 
     }
