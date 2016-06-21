@@ -111,8 +111,8 @@ void compute_matrix_exp(
     using namespace boost::numeric::ublas;
     for(std::size_t ind_i = 0; ind_i < mat_Lambda.size1(); ++ind_i){
         mat_Lambda(ind_i, ind_i) = std::exp( mat_Lambda(ind_i, ind_i) );
-        mat_exp_G =  prod( mat_U,prod(mat_Lambda,trans (mat_U)) );
     }
+    mat_exp_G =  prod( mat_U,prod(mat_Lambda,trans (mat_U)) );
 }
 
 template<typename real_scalar_type>
@@ -180,6 +180,7 @@ public:
         pow_spec<real_scalar_type> ps_g(m_num_fields, m_l_max);
         convert_to_coeffs<real_scalar_type>(pos_q, shc_a, ps_g);
         pow_spec<real_scalar_type> ps_sigma =  extract_pow_spec(shc_a);
+
         real_scalar_type log_post = 0;
         for(size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
             real_matrix_type g_l(m_num_fields, m_num_fields);
@@ -207,7 +208,6 @@ public:
             log_post += -0.5*fact_l*( std::log(det_cl) + trace_cl_sig_inv_l)
                 + det_cl;
         }
-
     }
 
     real_vector_type grad_log_post(real_vector_type const & pos_q) {
