@@ -20,6 +20,7 @@
 #include "../core/sph_hrm_coeffs.hpp"
 #include "../core/sph_prec_mat.hpp"
 #include "../core/win_func.hpp"
+#include "../utils/EigenvalueDecomposition.hpp"
 
 namespace blackpearl{ namespace log_post {
 
@@ -77,6 +78,41 @@ bool compute_inverse(
     inverse.assign( identity_matrix<real_scalar_type>( A.size1() ) );
     lu_substitute(A, pm, inverse);
     return true;
+}
+
+template<typename real_scalar_type>
+void compute_eigen_decomp(
+    boost::numeric::ublas::matrix<real_scalar_type> const & mat_M,
+    boost::numeric::ublas::matrix<real_scalar_type> & mat_Lambda,
+    boost::numeric::ublas::matrix<real_scalar_type> & mat_U
+){
+    BOOST_ASSERT( mat_M.size1() == mat_M.size2() );
+    BOOST_ASSERT( mat_Lambda.size1() == mat_Lambda.size2() );
+    BOOST_ASSERT( mat_U.size1() == mat_U.size2() );
+    BOOST_ASSERT( mat_M.size1() == mat_Lambda.size1() );
+    BOOST_ASSERT( mat_M.size1() == mat_U.size1() );
+    using namespace boost::numeric::ublas;
+    EigenvalueDecomposition<real_scalar_type> eig_decomp(mat_M);
+    mat_Lambda = eig_decomp.getD();
+    mat_U = eig_decomp.getV();
+}
+
+template<typename real_scalar_type>
+void compute_matrix_exp(
+    boost::numeric::ublas::matrix<real_scalar_type> const & mat_Lambda,
+    boost::numeric::ublas::matrix<real_scalar_type> const & mat_U,
+    boost::numeric::ublas::matrix<real_scalar_type> & mat_exp_G
+){
+    BOOST_ASSERT( mat_Lambda.size1() == mat_Lambda.size2() );
+    BOOST_ASSERT( mat_U.size1() == mat_U.size2() );
+    BOOST_ASSERT( mat_exp_G.size1() == mat_exp_G.size2() );
+    BOOST_ASSERT( mat_Lambda.size1() == mat_U.size1() );
+    BOOST_ASSERT( mat_Lambda.size1() == mat_exp_G.size1() );
+    using namespace boost::numeric::ublas;
+    for(std::size_t ind_i = 0; ind_i < mat_Lambda.size1(); ++ind_i){
+        mat_Lambda(ind_i, ind_i) = std::exp( mat_Lambda(ind_i, ind_i) );
+        mat_exp_G =  prod( mat_U,prod(mat_Lambda,trans (mat_U)) );
+    }
 }
 
 template<typename real_scalar_type>
@@ -138,34 +174,38 @@ public:
     real_scalar_type log_post(real_vector_type const & pos_q){
         using namespace blackpearl::core;
         using namespace boost::numeric::ublas;
+        typedef matrix<real_scalar_type> real_matrix_type;
         BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
         sph_hrm_coeffs<real_scalar_type> shc_a(m_num_fields, m_l_max, m_m_max);
-        pow_spec<real_scalar_type> ps_c(m_num_fields, m_l_max);
-        convert_to_coeffs<real_scalar_type>(pos_q, shc_a, ps_c);
+        pow_spec<real_scalar_type> ps_g(m_num_fields, m_l_max);
+        convert_to_coeffs<real_scalar_type>(pos_q, shc_a, ps_g);
         pow_spec<real_scalar_type> ps_sigma =  extract_pow_spec(shc_a);
         real_scalar_type log_post = 0;
         for(size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
-            matrix<real_scalar_type> c_l(m_num_fields,m_num_fields);
-            matrix<real_scalar_type> sigma_l(m_num_fields,m_num_fields);
-            matrix<real_scalar_type> c_inv_l(m_num_fields,m_num_fields);
-            matrix<real_scalar_type> c_inv_sigma_l(m_num_fields,m_num_fields);
-            ps_c.get_mtpl(mtpl_l,c_l);
+            real_matrix_type g_l(m_num_fields, m_num_fields);
+            ps_g.get_mtpl(mtpl_l,g_l);
+            real_matrix_type g_l_lambda(m_num_fields, m_num_fields);
+            real_matrix_type g_l_u(m_num_fields, m_num_fields);
+            compute_eigen_decomp(g_l, g_l_lambda, g_l_u);
+            real_matrix_type c_l(m_num_fields, m_num_fields);
+            compute_matrix_exp(g_l_lambda,g_l_u,c_l);
+            real_matrix_type sigma_l(m_num_fields,m_num_fields);
             ps_sigma.get_mtpl(mtpl_l,sigma_l);
             real_scalar_type fact_l = real_scalar_type(2*mtpl_l+1);
-            real_scalar_type log_det_c_l
-                = compute_inverse<real_scalar_type>(c_l);
-            real_scalar_type tr_c_l
-                = compute_trace<real_scalar_type>(c_l);
-            bool has_inv = compute_inverse<real_scalar_type>(c_l,c_inv_l);
-            BOOST_ASSERT(has_inv == true);
-            c_inv_sigma_l = prod(c_inv_l,sigma_l);
-            real_scalar_type tr_cl_inv_sigma_l
-                = compute_trace<real_scalar_type>(c_inv_sigma_l);
-            log_post += (
-                fact_l*log_det_c_l
-                + 0.5*fact_l*tr_cl_inv_sigma_l
-                + fact_l*tr_c_l
-            );
+            real_scalar_type det_cl
+                = compute_determinant<real_scalar_type>(c_l);
+            real_matrix_type c_inv_l(m_num_fields,m_num_fields);
+            compute_inverse<real_scalar_type>(c_l,c_inv_l);
+            real_scalar_type trace_cl_sig_inv_l =
+                sum(
+                    matrix_vector_range<real_matrix_type>(
+                        prod(c_inv_l,sigma_l),
+                        range (0,m_num_fields),
+                        range (0,m_num_fields)
+                    )
+                );
+            log_post += -0.5*fact_l*( std::log(det_cl) + trace_cl_sig_inv_l)
+                + det_cl;
         }
 
     }
