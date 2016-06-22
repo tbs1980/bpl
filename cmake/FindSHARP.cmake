@@ -13,8 +13,11 @@
 #   SHARP_LIBRARIES - The libraries needed to use SHARP
 #
 
-find_package(OpenMP REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+find_package(OpenMP)
+if(OPENMP_FOUND)
+    message("OpenMP Found")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 
 find_path(SHARP_INCLUDE_DIRS NAMES sharp.h
     HINTS ${SHARP_ROOT} /usr /usr/local

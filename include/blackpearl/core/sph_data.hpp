@@ -124,6 +124,10 @@ public:
         return m_data;
     }
 
+    inline std::vector<std::size_t> const & spins() const {
+        return m_spins;
+    }
+
 private:
     std::vector<std::size_t> m_spins;
     std::size_t m_num_fields;

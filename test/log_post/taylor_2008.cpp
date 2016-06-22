@@ -9,6 +9,7 @@
 #include <limits>
 #include <random>
 #include <boost/test/unit_test.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <blackpearl/core/sph_hrm_coeffs.hpp>
 #include <blackpearl/core/shc_ps_utils.hpp>
@@ -24,6 +25,7 @@ template<typename real_scalar_type>
 void test_taylor_2008_init(){
     using namespace blackpearl::core;
     using namespace blackpearl::log_post;
+    using namespace boost::numeric::ublas;
 
     std::vector<size_t> spins = {0,0,2,2};
     size_t const num_fields = spins.size();
@@ -61,6 +63,11 @@ void test_taylor_2008_init(){
     maps.data() += noise_maps.data();
     win_func<real_scalar_type> w_func(num_fields,l_max);
     taylor_2008<real_scalar_type> lp_t08(maps,p_mat,w_func);
+    std::size_t num_cls = cls.num_real_indep_coeffs(num_fields,l_max);
+    std::size_t num_alms = alms.num_real_indep_coeffs(num_fields,l_max,m_max);
+    vector<real_scalar_type> pos_q(num_cls+num_alms);
+    convert_to_coeffs<real_scalar_type>(alms,cls,pos_q);
+    lp_t08.log_post(pos_q);
 }
 
 BOOST_AUTO_TEST_CASE(taylor_2008_init){

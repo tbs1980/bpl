@@ -208,6 +208,12 @@ public:
             log_post += -0.5*fact_l*( std::log(det_cl) + trace_cl_sig_inv_l)
                 + det_cl;
         }
+
+
+        sph_data<real_scalar_type> data_fwd(m_data.spins(),m_data.num_pixels());
+
+
+        return log_post;
     }
 
     real_vector_type grad_log_post(real_vector_type const & pos_q) {
