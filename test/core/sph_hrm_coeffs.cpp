@@ -31,8 +31,8 @@ void test_shp_hrm_coeffs_row(){
     sph_hrm_coeffs<real_scalar_type> sh(num_fields,l_max,m_max);
 
     vector<complex_scalar_type> v(num_fields);
-    sh.get_row(0,0,v);
-    sh.set_row(1,0,v);
+    sh.get_mtpl(0,0,v);
+    sh.set_mtpl(1,0,v);
 }
 
 

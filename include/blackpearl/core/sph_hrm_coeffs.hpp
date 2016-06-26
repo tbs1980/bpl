@@ -88,6 +88,9 @@ public:
         size_t const mtpl_l,
         size_t const mtpl_m
     ){
+        BOOST_ASSERT(field < m_num_fields);
+        BOOST_ASSERT(mtpl_l <= m_l_max);
+        BOOST_ASSERT(mtpl_m <= mtpl_l);
         return m_hrm_coeffs(
             field,
             ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
@@ -99,6 +102,9 @@ public:
         size_t const mtpl_l,
         size_t const mtpl_m
     ) const {
+        BOOST_ASSERT(field < m_num_fields);
+        BOOST_ASSERT(mtpl_l <= m_l_max);
+        BOOST_ASSERT(mtpl_m <= mtpl_l);
         return m_hrm_coeffs(
             field,
             ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
@@ -121,11 +127,13 @@ public:
         return m_num_shp_hrm_coeffs;
     }
 
-    inline void set_row(
+    inline void set_mtpl(
         size_t const mtpl_l,
         size_t const mtpl_m,
         complex_vector_type const & shc_row
     ){
+        BOOST_ASSERT(mtpl_l <= m_l_max);
+        BOOST_ASSERT(mtpl_m <= mtpl_l);
         for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
             m_hrm_coeffs(
                 fld_i,
@@ -134,11 +142,13 @@ public:
         }
     }
 
-    inline void get_row(
+    inline void get_mtpl(
         size_t const mtpl_l,
         size_t const mtpl_m,
         complex_vector_type & shc_row
     ) const {
+        BOOST_ASSERT(mtpl_l <= m_l_max);
+        BOOST_ASSERT(mtpl_m <= mtpl_l);
         for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
             shc_row(fld_i) = m_hrm_coeffs(
                 fld_i,

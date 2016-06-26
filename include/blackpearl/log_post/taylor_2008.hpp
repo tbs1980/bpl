@@ -122,8 +122,10 @@ class taylor_2008{
 public:
     static_assert(std::is_floating_point<real_scalar_type>::value,
         "The real_scalar_type should be a floating point type");
-
+    typedef std::complex<real_scalar_type> complex_scalar_type;
     typedef boost::numeric::ublas::vector<real_scalar_type> real_vector_type;
+    typedef boost::numeric::ublas::vector<complex_scalar_type>
+        complex_vector_type;
 
     static const size_t num_mc_samples = 1000;
 
@@ -215,7 +217,7 @@ public:
         m_sh_trans.synthesise(shc_a_fwd,data_fwd);
         real_scalar_type log_lik = 0;
         for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
-            for(std::size_t pix_i = 0; pix_i <= m_num_pixels; ++pix_i){
+            for(std::size_t pix_i = 0; pix_i < m_num_pixels; ++pix_i){
                 real_scalar_type diff
                     = m_data(fld_i,pix_i) - data_fwd(fld_i,pix_i);
                 log_lik -= diff*diff*m_prec_mat(fld_i,pix_i);
@@ -228,15 +230,77 @@ public:
 
     real_vector_type grad_log_post(real_vector_type const & pos_q) {
         using namespace blackpearl::core;
+        using namespace boost::numeric::ublas;
+        typedef matrix<real_scalar_type> real_matrix_type;
         BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
+        sph_hrm_coeffs<real_scalar_type> shc_a(m_num_fields, m_l_max, m_m_max);
+        pow_spec<real_scalar_type> ps_g(m_num_fields, m_l_max);
+        convert_to_coeffs<real_scalar_type>(pos_q, shc_a, ps_g);
+        pow_spec<real_scalar_type> ps_sigma =  extract_pow_spec(shc_a);
 
-        sph_hrm_coeffs<real_scalar_type> alms(
-            m_num_fields,
-            m_l_max,
-            m_m_max
-        );
-        pow_spec<real_scalar_type> cls(m_num_fields,m_l_max);
-        convert_to_coeffs<real_scalar_type>(pos_q, alms, cls);
+        pow_spec<real_scalar_type> ps_dg(m_num_fields, m_l_max);
+        pow_spec<real_scalar_type> ps_c_inv(m_num_fields, m_l_max);
+        for(std::size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
+            real_matrix_type g_l(m_num_fields, m_num_fields);
+            ps_g.get_mtpl(mtpl_l,g_l);
+            real_matrix_type c_l = compute_matrix_exp(g_l);
+            real_matrix_type sigma_l(m_num_fields,m_num_fields);
+            ps_sigma.get_mtpl(mtpl_l,sigma_l);
+            real_matrix_type c_inv_l(m_num_fields,m_num_fields);
+            compute_inverse<real_scalar_type>(c_l,c_inv_l);
+            real_matrix_type c_inv_sigma_l = prod(c_inv_l,sigma_l);
+            real_matrix_type dg_l(m_num_fields,m_num_fields);
+            dg_l = 0.5*(2.*mtpl_l+1.)*c_inv_sigma_l
+                - 0.5*(2.*mtpl_l-1.)
+                    *identity_matrix<real_scalar_type>(m_num_fields);
+            ps_dg.set_mtpl(mtpl_l,dg_l);
+            ps_c_inv.set_mtpl(mtpl_l,c_inv_l);
+        }
+
+        sph_hrm_coeffs<real_scalar_type> shc_a_fwd(shc_a);
+
+        apply_win_func<real_scalar_type>(m_win_func,shc_a_fwd);
+        sph_data<real_scalar_type> data_fwd(m_data.spins(),m_data.num_pixels());
+        m_sh_trans.synthesise(shc_a_fwd, data_fwd);
+        for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
+            for(std::size_t pix_i = 0; pix_i < m_num_pixels; ++pix_i){
+                data_fwd(fld_i,pix_i)
+                    = ( m_data(fld_i,pix_i) - data_fwd(fld_i,pix_i) )
+                        *m_prec_mat(fld_i,pix_i);
+            }
+        }
+        m_sh_trans.analyse(data_fwd,shc_a_fwd);
+        real_scalar_type inv_omega_pix = 4.*M_PI;
+        for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
+            for(std::size_t mtpl_l=0; mtpl_l <= m_l_max; ++mtpl_l){
+                shc_a_fwd(fld_i,mtpl_l,0)
+                    *=  m_win_func(fld_i,mtpl_l)*inv_omega_pix;
+            }
+            for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m){
+                for(std::size_t mtpl_l= mtpl_m; mtpl_l <= m_l_max; ++mtpl_l){
+                    shc_a_fwd(fld_i,mtpl_l,mtpl_m)
+                        *= 2.*m_win_func(fld_i,mtpl_l)*inv_omega_pix;
+                }
+            }
+
+            for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j){
+                for(std::size_t mtpl_l=0; mtpl_l <= m_l_max; ++mtpl_l){
+                    shc_a_fwd(fld_i,mtpl_l,0)
+                        -=  ps_c_inv(fld_i,fld_j,mtpl_l)*shc_a(fld_j,mtpl_l,0);
+                }
+                for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m){
+                    for(std::size_t mtpl_l=mtpl_m; mtpl_l<=m_l_max; ++mtpl_l){
+                        shc_a_fwd(fld_i,mtpl_l,mtpl_m)
+                            -= real_scalar_type(2)*ps_c_inv(fld_i,fld_j,mtpl_l)
+                                *shc_a(fld_j,mtpl_l,mtpl_m);
+                    }
+                }
+            }
+        }
+
+        real_vector_type d_pos_q( pos_q.size() );
+        convert_to_real_vector<real_scalar_type>(shc_a_fwd,ps_dg,d_pos_q);
+        return d_pos_q;
     }
 
 private:

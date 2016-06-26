@@ -90,6 +90,8 @@ public:
         size_t const field,
         size_t const pix
     ){
+        BOOST_ASSERT(field < m_num_fields);
+        BOOST_ASSERT(pix < m_num_pixels);
         return m_data(field,pix);
     }
 
@@ -97,6 +99,8 @@ public:
         size_t const field,
         size_t const pix
     ) const{
+        BOOST_ASSERT(field < m_num_fields);
+        BOOST_ASSERT(pix < m_num_pixels);
         return m_data(field,pix);
     }
 

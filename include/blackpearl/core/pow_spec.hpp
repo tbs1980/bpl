@@ -3,6 +3,8 @@
 
 #include <cstddef>
 #include <vector>
+#include <iostream>
+#include <iomanip>
 #include <boost/numeric/ublas/matrix.hpp>
 #include "../config.hpp"
 
@@ -17,18 +19,18 @@ public:
     );
     typedef boost::numeric::ublas::matrix<real_scalar_type> real_matrix_type;
 
-    static size_t num_power_coeffs(size_t const l_max){
+    inline static size_t num_power_coeffs(size_t const l_max){
         return size_t(l_max+1);
     }
 
-    static size_t num_real_indep_coeffs(
+    inline static size_t num_real_indep_coeffs(
         size_t const num_fields,
         size_t const l_max
     ) {
         return num_power_coeffs(l_max)*num_fields*(num_fields+1)/2;
     }
 
-    static size_t get_tri_index(
+    inline static size_t get_tri_index(
         size_t const ind_i,
         size_t const ind_j,
         size_t const size_n
@@ -58,8 +60,14 @@ public:
         size_t const mtpl_l
     ) const {
         // http://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix
-        BOOST_ASSERT(fld_j >= fld_i);
-        return m_pow_specs(get_tri_index(fld_i,fld_j,m_num_fields),mtpl_l);
+        BOOST_ASSERT(fld_i < m_num_fields);
+        BOOST_ASSERT(fld_j < m_num_fields);
+        BOOST_ASSERT(mtpl_l <= m_l_max);
+        if( fld_j >= fld_i){
+            return m_pow_specs(get_tri_index(fld_i,fld_j,m_num_fields),mtpl_l);
+        }else {
+            return m_pow_specs(get_tri_index(fld_j,fld_i,m_num_fields),mtpl_l);
+        }
     }
 
     inline real_scalar_type & operator()(
@@ -67,14 +75,21 @@ public:
         size_t const fld_j,
         size_t const mtpl_l
     ) {
-        BOOST_ASSERT(fld_j >= fld_i);
-        return m_pow_specs(get_tri_index(fld_i,fld_j,m_num_fields),mtpl_l);
+        BOOST_ASSERT(fld_i < m_num_fields);
+        BOOST_ASSERT(fld_j < m_num_fields);
+        BOOST_ASSERT(mtpl_l <= m_l_max);
+        if( fld_j >= fld_i){
+            return m_pow_specs(get_tri_index(fld_i,fld_j,m_num_fields),mtpl_l);
+        }else {
+            return m_pow_specs(get_tri_index(fld_j,fld_i,m_num_fields),mtpl_l);
+        }
     }
 
     inline void set_mtpl (
         size_t const mtpl_l,
         real_matrix_type const & c_ell
     ) {
+        BOOST_ASSERT(mtpl_l <= m_l_max);
         for(size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
             for(size_t fld_j = fld_i; fld_j < m_num_fields; ++fld_j){
                 m_pow_specs(get_tri_index(fld_i,fld_j,m_num_fields), mtpl_l)
@@ -87,6 +102,7 @@ public:
         size_t const mtpl_l,
         real_matrix_type & c_ell
     ) const {
+        BOOST_ASSERT(mtpl_l <= m_l_max);
         for(size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
             for(size_t fld_j = fld_i; fld_j < m_num_fields; ++fld_j){
                  c_ell(fld_i,fld_j) = m_pow_specs(
@@ -115,6 +131,20 @@ public:
 
     inline real_matrix_type & data() {
         return m_pow_specs;
+    }
+
+    void print_pow_spec() const{
+        for(std::size_t mtpl_l =0; mtpl_l<=m_l_max; ++mtpl_l){
+            std::cout<< "multipole = " << mtpl_l << std::endl;
+            for(std::size_t fld_i =0; fld_i < m_num_fields; ++fld_i){
+                for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j){
+                    std::cout << std::scientific << std::setprecision(4)
+                        << this->operator()(fld_i,fld_j,mtpl_l)<< "    ";
+                }
+                std::cout<< std::endl;
+            }
+            std::cout<< std::endl;
+        }
     }
 
 private:

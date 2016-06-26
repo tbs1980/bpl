@@ -122,7 +122,7 @@ sph_hrm_coeffs<real_scalar_type> create_gauss_sph_hrm_coeffs(
                 shc_lm(fld_i) = complex_scalar_type(re,im);
             }
             shc_lm = prod(ps_chol_l,shc_lm);
-            shc.set_row(mtpl_l,0,shc_lm);
+            shc.set_mtpl(mtpl_l,0,shc_lm);
             for(size_t mtpl_m = 1; mtpl_m <= mtpl_l; ++mtpl_m) {
                 for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
                     real_scalar_type re = norm_dist(rng);
@@ -130,7 +130,7 @@ sph_hrm_coeffs<real_scalar_type> create_gauss_sph_hrm_coeffs(
                     shc_lm(fld_i) = complex_scalar_type(re,im);
                 }
                 shc_lm = sqrt_half*prod(ps_chol_l,shc_lm);
-                shc.set_row(mtpl_l,mtpl_m,shc_lm);
+                shc.set_mtpl(mtpl_l,mtpl_m,shc_lm);
             }
         }
     }

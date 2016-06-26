@@ -13,7 +13,7 @@ void test_sph_diag_prec_mat(){
     std::size_t n_side = 2048;
     std::size_t num_pixels = 12*n_side*n_side;
     size_t num_fields = 6;
-    sph_diag_prec_mat<real_scalar_type> prec_mat(num_pixels,num_fields);
+    sph_diag_prec_mat<real_scalar_type> prec_mat(num_fields,num_pixels);
 }
 
 BOOST_AUTO_TEST_CASE(sph_diag_prec_mat){
