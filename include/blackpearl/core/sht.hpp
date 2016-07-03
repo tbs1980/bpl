@@ -184,6 +184,9 @@ public:
         size_t const num_fields = maps.num_fields();
         size_t const num_fields_s_0 = maps.num_spin_zero_fields();
         size_t const num_fields_s_2 = maps.num_spin_two_fields();
+        BOOST_ASSERT(num_pixels == m_num_pixels);
+        BOOST_ASSERT(alms.l_max() == m_l_max);
+        BOOST_ASSERT(alms.m_max() == m_m_max);
 
         typedef const real_scalar_type* const_real_scalar_pntr_type;
         const_real_scalar_pntr_type * p_ptr_m

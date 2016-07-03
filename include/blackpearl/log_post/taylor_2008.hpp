@@ -224,7 +224,6 @@ public:
             }
         }
         log_lik *= 0.5;
-
         return log_prior + log_lik;
     }
 
@@ -258,7 +257,6 @@ public:
         }
 
         sph_hrm_coeffs<real_scalar_type> shc_a_fwd(shc_a);
-
         apply_win_func<real_scalar_type>(m_win_func,shc_a_fwd);
         sph_data<real_scalar_type> data_fwd(m_data.spins(),m_data.num_pixels());
         m_sh_trans.synthesise(shc_a_fwd, data_fwd);
@@ -270,16 +268,16 @@ public:
             }
         }
         m_sh_trans.analyse(data_fwd,shc_a_fwd);
-        real_scalar_type inv_omega_pix = 4.*M_PI;
+        real_scalar_type omega_pix = 4.*M_PI/(real_scalar_type) m_num_pixels;
         for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
             for(std::size_t mtpl_l=0; mtpl_l <= m_l_max; ++mtpl_l){
                 shc_a_fwd(fld_i,mtpl_l,0)
-                    *=  m_win_func(fld_i,mtpl_l)*inv_omega_pix;
+                    *=  m_win_func(fld_i,mtpl_l)/omega_pix;
             }
             for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m){
                 for(std::size_t mtpl_l= mtpl_m; mtpl_l <= m_l_max; ++mtpl_l){
                     shc_a_fwd(fld_i,mtpl_l,mtpl_m)
-                        *= 2.*m_win_func(fld_i,mtpl_l)*inv_omega_pix;
+                        *= 2.*m_win_func(fld_i,mtpl_l)/omega_pix;
                 }
             }
 
