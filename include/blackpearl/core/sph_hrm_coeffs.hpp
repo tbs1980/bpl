@@ -48,10 +48,10 @@ public:
         std::size_t const num_fields,
         std::size_t const l_max,
         std::size_t const m_max
-    ) throw()
-    :m_num_fields(num_fields)
-    ,m_l_max(l_max)
-    ,m_m_max(m_max){
+    )
+    : m_num_fields(num_fields)
+    , m_l_max(l_max)
+    , m_m_max(m_max) {
         BOOST_ASSERT_MSG(
             m_num_fields <= BLACKPEARL_MAX_NUM_FIELDS,
             "num_fields too big. Please modify the config.hpp and recompile."

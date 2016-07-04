@@ -20,10 +20,12 @@
 #include <blackpearl/core/sht.hpp>
 #include <blackpearl/core/sph_data_prec_mat_utils.hpp>
 #include <blackpearl/log_post/taylor_2008.hpp>
+#include <blackpearl/utils/lin_alg_utils.hpp>
 
 template<typename real_scalar_type>
 void test_taylor_2008_init(){
     using namespace blackpearl::core;
+    using namespace blackpearl::utils;
     using namespace blackpearl::log_post;
     using namespace boost::numeric::ublas;
 
@@ -73,6 +75,7 @@ void test_taylor_2008_init(){
 template<typename real_scalar_type>
 void test_taylor_2008_log_post_case_1(){
     using namespace blackpearl::core;
+    using namespace blackpearl::utils;
     using namespace blackpearl::log_post;
     using namespace boost::numeric::ublas;
     typedef std::complex<real_scalar_type> complex_scalar_type;
@@ -143,6 +146,7 @@ void test_taylor_2008_log_post_case_1(){
 template<typename real_scalar_type>
 void test_taylor_2008_grad_log_post_case_1(){
     using namespace blackpearl::core;
+    using namespace blackpearl::utils;
     using namespace blackpearl::log_post;
     using namespace boost::numeric::ublas;
     typedef std::complex<real_scalar_type> complex_scalar_type;
@@ -246,6 +250,7 @@ void test_taylor_2008_grad_log_post_case_1(){
 template<typename real_scalar_type>
 void test_taylor_2008_log_post_case_2(){
     using namespace blackpearl::core;
+    using namespace blackpearl::utils;
     using namespace blackpearl::log_post;
     using namespace boost::numeric::ublas;
     typedef matrix<real_scalar_type> real_matrix_type;
@@ -327,6 +332,7 @@ struct grad_log_post_case_2_scale<double>{
 template<typename real_scalar_type>
 void test_taylor_2008_grad_log_post_case_2(){
     using namespace blackpearl::core;
+    using namespace blackpearl::utils;
     using namespace blackpearl::log_post;
     using namespace boost::numeric::ublas;
     typedef matrix<real_scalar_type> real_matrix_type;

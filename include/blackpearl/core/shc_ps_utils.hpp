@@ -5,6 +5,7 @@
 #include <iostream>
 #include <complex>
 #include <random>
+#include <algorithm>
 #include <boost/assert.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>

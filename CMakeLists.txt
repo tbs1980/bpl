@@ -20,8 +20,12 @@ endif()
 
 include(set_compiler_flags)
 
-find_package(Boost 1.53.0 REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost 1.53.0 REQUIRED COMPONENTS
+    unit_test_framework
+    program_options
+)
 find_package(SHARP REQUIRED)
+find_package(HEALPix REQUIRED)
 # TODO make sure that we are using the same fitsio for the healpix
 
 include_directories(include)
@@ -33,3 +37,4 @@ include_directories(
 enable_testing()
 add_subdirectory(test)
 add_subdirectory(perf)
+add_subdirectory(src)

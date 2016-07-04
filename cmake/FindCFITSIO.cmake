@@ -15,7 +15,7 @@
 
 find_path(CFITSIO_INCLUDE_DIRS NAMES fitsio.h
     HINTS ${CFITSIO_ROOT} /usr /usr/local
-    PATH_SUFFIXES "include"
+    PATH_SUFFIXES "include" "include/cfitsio"
 )
 
 find_library(
