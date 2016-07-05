@@ -1,6 +1,8 @@
 #ifndef BLACKPEARL_UTILS_LIN_ALG_UTILS_HPP
 #define BLACKPEARL_UTILS_LIN_ALG_UTILS_HPP
 
+#include <cmath>
+#include <cstddef>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -10,6 +12,43 @@
 #include "../utils/EigenvalueDecomposition.hpp"
 
 namespace blackpearl{ namespace utils{
+
+template <typename real_scalar_type>
+std::size_t cholesky_decompose(
+    boost::numeric::ublas::matrix<real_scalar_type> const & mat_A,
+    boost::numeric::ublas::matrix<real_scalar_type> &  mat_L
+) {
+    using namespace boost::numeric::ublas;
+    typedef matrix<real_scalar_type> real_matrix_type;
+    // http://www.guwi17.de/ublas/examples/
+    BOOST_ASSERT( mat_A.size1() == mat_A.size2() );
+    BOOST_ASSERT( mat_A.size1() ==  mat_L.size1() );
+    BOOST_ASSERT( mat_A.size2() ==  mat_L.size2() );
+
+    std::size_t const num_rows = mat_A.size1();
+    for (std::size_t k=0 ; k < num_rows; k++) {
+        real_scalar_type qL_kk = mat_A(k,k) - inner_prod(
+            project( row( mat_L, k), range(0, k) ),
+            project( row( mat_L, k), range(0, k) )
+        );
+
+        if (qL_kk <= 0) {
+            return 1 + k;
+        }
+        else {
+            real_scalar_type L_kk = std::sqrt( qL_kk );
+             mat_L(k,k) =  L_kk;
+            matrix_column<real_matrix_type> cLk(mat_L, k);
+            project( cLk, range(k+1, num_rows) ) = (
+                project( column( mat_A, k), range(k+1, num_rows) ) - prod(
+                    project( mat_L, range(k+1, num_rows), range(0, k) ) ,
+                    project( row(mat_L, k), range(0, k) )
+                )
+            ) / L_kk;
+        }
+    }
+    return 0;
+}
 
 template<typename real_scalar_type>
 real_scalar_type compute_determinant(

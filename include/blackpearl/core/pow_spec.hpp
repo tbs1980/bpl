@@ -19,27 +19,27 @@ public:
     );
     typedef boost::numeric::ublas::matrix<real_scalar_type> real_matrix_type;
 
-    inline static size_t num_power_coeffs(size_t const l_max){
-        return size_t(l_max+1);
+    inline static std::size_t num_power_coeffs(std::size_t const l_max){
+        return std::size_t(l_max+1);
     }
 
-    inline static size_t num_real_indep_coeffs(
-        size_t const num_fields,
-        size_t const l_max
+    inline static std::size_t num_real_indep_coeffs(
+        std::size_t const num_fields,
+        std::size_t const l_max
     ) {
         return num_power_coeffs(l_max)*num_fields*(num_fields+1)/2;
     }
 
-    inline static size_t get_tri_index(
-        size_t const ind_i,
-        size_t const ind_j,
-        size_t const size_n
+    inline static std::size_t get_tri_index(
+        std::size_t const ind_i,
+        std::size_t const ind_j,
+        std::size_t const size_n
     ){
         return size_n*(size_n - 1)/2
             - (size_n - ind_i)*( (size_n - ind_i)-1 )/2 + ind_j ;
     }
 
-    pow_spec(size_t const num_fields,size_t const l_max) throw()
+    pow_spec(std::size_t const num_fields,std::size_t const l_max) throw()
     :m_num_fields(num_fields)
     ,m_l_max(l_max){
         BOOST_ASSERT_MSG(
@@ -50,14 +50,14 @@ public:
             m_num_fields <= BLACKPEARL_MAX_NUM_FIELDS,
             "num_fields too big. Please modify the config.hpp and recompile."
         );
-        size_t const num_rows = num_fields*(num_fields+1)/2;
+        std::size_t const num_rows = num_fields*(num_fields+1)/2;
         m_pow_specs = real_matrix_type(num_rows,(l_max+1));
     }
 
     inline real_scalar_type const & operator()(
-        size_t const fld_i,
-        size_t const fld_j,
-        size_t const mtpl_l
+        std::size_t const fld_i,
+        std::size_t const fld_j,
+        std::size_t const mtpl_l
     ) const {
         // http://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix
         BOOST_ASSERT(fld_i < m_num_fields);
@@ -71,9 +71,9 @@ public:
     }
 
     inline real_scalar_type & operator()(
-        size_t const fld_i,
-        size_t const fld_j,
-        size_t const mtpl_l
+        std::size_t const fld_i,
+        std::size_t const fld_j,
+        std::size_t const mtpl_l
     ) {
         BOOST_ASSERT(fld_i < m_num_fields);
         BOOST_ASSERT(fld_j < m_num_fields);
@@ -86,12 +86,12 @@ public:
     }
 
     inline void set_mtpl (
-        size_t const mtpl_l,
+        std::size_t const mtpl_l,
         real_matrix_type const & c_ell
     ) {
         BOOST_ASSERT(mtpl_l <= m_l_max);
-        for(size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
-            for(size_t fld_j = fld_i; fld_j < m_num_fields; ++fld_j){
+        for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
+            for(std::size_t fld_j = fld_i; fld_j < m_num_fields; ++fld_j){
                 m_pow_specs(get_tri_index(fld_i,fld_j,m_num_fields), mtpl_l)
                     = c_ell(fld_i,fld_j);
             }
@@ -99,12 +99,12 @@ public:
     }
 
     inline void get_mtpl (
-        size_t const mtpl_l,
+        std::size_t const mtpl_l,
         real_matrix_type & c_ell
     ) const {
         BOOST_ASSERT(mtpl_l <= m_l_max);
-        for(size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
-            for(size_t fld_j = fld_i; fld_j < m_num_fields; ++fld_j){
+        for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i){
+            for(std::size_t fld_j = fld_i; fld_j < m_num_fields; ++fld_j){
                  c_ell(fld_i,fld_j) = m_pow_specs(
                      get_tri_index(fld_i,fld_j,m_num_fields),
                      mtpl_l
@@ -117,11 +117,11 @@ public:
         }
     }
 
-    inline size_t l_max() const {
+    inline std::size_t l_max() const {
         return m_l_max;
     }
 
-    inline size_t num_fields() const {
+    inline std::size_t num_fields() const {
         return m_num_fields;
     }
 
@@ -148,8 +148,8 @@ public:
     }
 
 private:
-    size_t m_num_fields;
-    size_t m_l_max;
+    std::size_t m_num_fields;
+    std::size_t m_l_max;
     real_matrix_type m_pow_specs;
 };
 

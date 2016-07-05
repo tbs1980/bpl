@@ -19,9 +19,12 @@ endmacro(mpp_add_cxx_compiler_flag)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     if(CMAKE_CXX_COMPILER_ID MATCHES "SunPro")
         mpp_add_cxx_compiler_flag("-g" "DEBUG")
+        mpp_add_cxx_compiler_flag("-g0" "RELEASE")
         mpp_add_cxx_compiler_flag("-fast" "RELEASE")
+        mpp_add_cxx_compiler_flag("–xO3" "RELEASE")
 
         mpp_add_cxx_compiler_flag("-std=c++11" "")
+        mpp_add_cxx_compiler_flag("-pedantic" "")
         mpp_add_cxx_compiler_flag("+w2" "")
 
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")

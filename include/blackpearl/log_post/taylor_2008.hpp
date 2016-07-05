@@ -156,10 +156,11 @@ public:
             real_matrix_type c_inv_l(m_num_fields,m_num_fields);
             compute_inverse<real_scalar_type>(c_l,c_inv_l);
             real_matrix_type c_inv_sigma_l = prod(c_inv_l,sigma_l);
-            real_matrix_type dg_l(m_num_fields,m_num_fields);
-            dg_l = 0.5*(2.*mtpl_l+1.)*c_inv_sigma_l
-                - 0.5*(2.*mtpl_l-1.)
-                    *identity_matrix<real_scalar_type>(m_num_fields);
+            real_matrix_type id_I
+                = identity_matrix<real_scalar_type>(m_num_fields);
+            real_matrix_type phi_l = 0.5*(2.*mtpl_l+1.)*(c_inv_sigma_l - id_I);
+            real_matrix_type dg_l
+                = 2.*phi_l - element_prod(phi_l,id_I) + id_I;
             ps_dg.set_mtpl(mtpl_l,dg_l);
             ps_c_inv.set_mtpl(mtpl_l,c_inv_l);
         }

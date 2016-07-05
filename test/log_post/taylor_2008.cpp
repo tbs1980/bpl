@@ -8,6 +8,7 @@
 #include <complex>
 #include <limits>
 #include <random>
+#include <cstddef>
 #include <boost/test/unit_test.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -456,6 +457,103 @@ void test_taylor_2008_grad_log_post_case_2(){
     }
 }
 
+template<typename real_scalar_type>
+struct grad_log_post_case_3_scale;
+
+template<>
+struct grad_log_post_case_3_scale<double>{
+    static constexpr double const val_num_grads = 1e15;
+};
+
+template<class real_scalar_type>
+void test_taylor_2008_grad_log_post_case_3(){
+    using namespace blackpearl::core;
+    using namespace blackpearl::utils;
+    using namespace blackpearl::log_post;
+    using namespace boost::numeric::ublas;
+
+    std::vector<std::size_t> spins = {0,0,2,2};
+    std::size_t const num_fields = spins.size();
+    std::size_t const l_max = 4;
+    std::size_t const m_max = l_max;
+    std::size_t const num_sides = l_max/2;
+    std::size_t const num_pixels = 12*num_sides*num_sides;
+
+    pow_spec<real_scalar_type> cls(num_fields,l_max);
+    for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
+        for(size_t fld_j = fld_i; fld_j < num_fields; ++fld_j){
+            for(size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l){
+                cls(fld_i,fld_j,mtpl_l) = 0;
+                if(fld_i == fld_j ){
+                    cls(fld_i,fld_j,mtpl_l) = 1;
+                }
+            }
+        }
+    }
+    // std::random_device rng_dev;
+    // std::size_t rng_seed = 1234;//rng_dev();
+    std::mt19937 rng(1234);
+    sph_hrm_coeffs<real_scalar_type> alms =
+        create_gauss_sph_hrm_coeffs<real_scalar_type>(cls,rng);
+    pow_spec<real_scalar_type> sigma =  extract_pow_spec(alms);
+    sht<real_scalar_type> sh_trans(num_fields,l_max,m_max,num_pixels);
+    sph_data<real_scalar_type> maps(spins,num_pixels);
+    sh_trans.synthesise(alms,maps);
+    sph_diag_prec_mat<real_scalar_type> p_mat(num_fields,num_pixels);
+    real_scalar_type const omega_pix = 4.*M_PI/(real_scalar_type) num_pixels;
+    real_scalar_type const sigma_pixel = std::sqrt(1e-2/omega_pix);
+    for(size_t fld_i = 0; fld_i < num_fields; ++fld_i){
+        for(size_t pix_i = 0; pix_i < num_pixels; ++pix_i){
+            p_mat(fld_i,pix_i) = 1./(sigma_pixel*sigma_pixel);
+        }
+    }
+    sph_data<real_scalar_type> noise_maps
+        = gen_gauss_noise_data(p_mat,spins,rng);
+    maps.data() += noise_maps.data();
+    win_func<real_scalar_type> w_func(num_fields,l_max);
+    for(std::size_t fld_i = 0; fld_i < num_fields; ++fld_i) {
+        for(std::size_t mtpl_l = 0; mtpl_l <= l_max; ++mtpl_l) {
+            w_func(fld_i,mtpl_l) = 1;
+        }
+    }
+
+    taylor_2008<real_scalar_type> lp_t08(maps,p_mat,w_func);
+    std::size_t num_cls = cls.num_real_indep_coeffs(num_fields,l_max);
+    std::size_t num_alms = alms.num_real_indep_coeffs(num_fields,l_max,m_max);
+    vector<real_scalar_type> pos_q(num_cls+num_alms);
+    convert_to_real_vector<real_scalar_type>(alms,sigma,pos_q);
+    vector<real_scalar_type> grad_pos_q = lp_t08.grad_log_post(pos_q);
+
+    vector<real_scalar_type> grad_pos_q_num(grad_pos_q.size());
+    real_scalar_type eps = std::numeric_limits<real_scalar_type>::epsilon();
+    vector<real_scalar_type> p_plus_h(pos_q);
+    vector<real_scalar_type> p_minus_h(pos_q);
+    for(std::size_t ind_i = 0; ind_i<pos_q.size(); ++ind_i){
+        if(pos_q(ind_i) != 0){
+            real_scalar_type h = pos_q(ind_i)*std::sqrt(eps)*10;
+            p_plus_h(ind_i) += h;
+            p_minus_h(ind_i) -= h;
+            real_scalar_type f_plus_h = lp_t08.log_post(p_plus_h);
+            real_scalar_type f_minus_h = lp_t08.log_post(p_minus_h);
+            grad_pos_q_num(ind_i) = 0.5*(f_plus_h - f_minus_h)/h;
+            p_plus_h(ind_i) = pos_q(ind_i);
+            p_minus_h(ind_i) = pos_q(ind_i);
+        }
+        else {
+            grad_pos_q_num(ind_i) = 0.;
+        }
+    }
+
+    for(std::size_t ind_i = num_cls; ind_i<num_alms+num_cls; ++ind_i) {
+        if(pos_q(ind_i) > 0) {
+            BOOST_REQUIRE(
+                std::abs( grad_pos_q(ind_i) - grad_pos_q_num(ind_i) ) <=
+                eps*grad_log_post_case_3_scale<real_scalar_type>::val_num_grads
+            );
+        }
+    }
+}
+
 BOOST_AUTO_TEST_CASE(taylor_2008_init){
     // test_taylor_2008_init<float>();
     test_taylor_2008_init<double>();
@@ -479,4 +577,8 @@ BOOST_AUTO_TEST_CASE(taylor_2008_log_post_case_2){
 BOOST_AUTO_TEST_CASE(taylor_2008_grad_log_post_case_2){
     // test_taylor_2008_grad_log_post_case_2<float>();
     test_taylor_2008_grad_log_post_case_2<double>();
+}
+
+BOOST_AUTO_TEST_CASE(taylor_2008_grad_log_post_case_3){
+    test_taylor_2008_grad_log_post_case_3<double>();
 }

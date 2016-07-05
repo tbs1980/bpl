@@ -41,15 +41,15 @@ public:
         return const_cast<void *>( reinterpret_cast<const void *>(ptr) );
     }
 
-    static bool is_power_of_2(size_t const x){
+    static bool is_power_of_2(std::size_t const x){
         return (x != 0) && ((x & (x - 1)) == 0);
     }
 
     sht(
-        size_t const num_fields,
-        size_t const l_max,
-        size_t const m_max,
-        size_t const num_pixels
+        std::size_t const num_fields,
+        std::size_t const l_max,
+        std::size_t const m_max,
+        std::size_t const num_pixels
     ) throw()
     :m_num_fields(num_fields)
     ,m_l_max(l_max)
@@ -73,14 +73,16 @@ public:
             "num_pixels too big. Please modify the config.hpp and recompile."
         );
 
-        if(num_pixels % size_t(12) !=  size_t(0)){
+        if(num_pixels % std::size_t(12) !=  std::size_t(0)){
             std::stringstream msg;
             msg << "number of pixels = "
                 << num_pixels
                 << " should be a multiple of  12.";
             throw std::invalid_argument(msg.str());
         }
-        size_t const num_sides = (size_t) std::sqrt(real_scalar_type(num_pixels)/real_scalar_type(12));
+        std::size_t const num_sides = (std::size_t) std::sqrt(
+            real_scalar_type(num_pixels)/real_scalar_type(12)
+        );
         if(is_power_of_2(num_sides) == false){
             std::stringstream msg;
             msg << "number of sides = "
@@ -112,11 +114,11 @@ public:
         sph_hrm_coeffs<real_scalar_type> const & alms,
         sph_data<real_scalar_type> & maps
     ) const {
-        size_t const num_alms = alms.num_sph_hrm_coeffs();
-        size_t const num_pixels = maps.num_pixels();
-        size_t const num_fields = maps.num_fields();
-        size_t const num_fields_s_0 = maps.num_spin_zero_fields();
-        size_t const num_fields_s_2 = maps.num_spin_two_fields();
+        std::size_t const num_alms = alms.num_sph_hrm_coeffs();
+        std::size_t const num_pixels = maps.num_pixels();
+        std::size_t const num_fields = maps.num_fields();
+        std::size_t const num_fields_s_0 = maps.num_spin_zero_fields();
+        std::size_t const num_fields_s_2 = maps.num_spin_two_fields();
 
         typedef const complex_scalar_type* const_complex_scalar_pntr_type;
         const_complex_scalar_pntr_type * p_ptr_a
@@ -127,7 +129,7 @@ public:
         real_scalar_pntr_type * p_ptr_m = new real_scalar_pntr_type[num_fields];
         p_ptr_m[0] = & maps(0,0);
 
-        for(size_t i=1;i<num_fields;++i){
+        for(std::size_t i=1;i<num_fields;++i){
             p_ptr_a[i] = p_ptr_a[i-1] + num_alms;
             p_ptr_m[i] = p_ptr_m[i-1] + num_pixels;
         }
@@ -179,11 +181,11 @@ public:
         sph_data<real_scalar_type> const & maps,
         sph_hrm_coeffs<real_scalar_type> & alms
     ) const {
-        size_t const num_alms = alms.num_sph_hrm_coeffs();
-        size_t const num_pixels = maps.num_pixels();
-        size_t const num_fields = maps.num_fields();
-        size_t const num_fields_s_0 = maps.num_spin_zero_fields();
-        size_t const num_fields_s_2 = maps.num_spin_two_fields();
+        std::size_t const num_alms = alms.num_sph_hrm_coeffs();
+        std::size_t const num_pixels = maps.num_pixels();
+        std::size_t const num_fields = maps.num_fields();
+        std::size_t const num_fields_s_0 = maps.num_spin_zero_fields();
+        std::size_t const num_fields_s_2 = maps.num_spin_two_fields();
         BOOST_ASSERT(num_pixels == m_num_pixels);
         BOOST_ASSERT(alms.l_max() == m_l_max);
         BOOST_ASSERT(alms.m_max() == m_m_max);
@@ -198,7 +200,7 @@ public:
             = new complex_scalar_pntr_type[num_fields];
         p_ptr_a[0] = & alms(0,0,0);
 
-        for(size_t i=1;i<num_fields;++i){
+        for(std::size_t i=1;i<num_fields;++i){
             p_ptr_m[i] = p_ptr_m[i-1] + num_pixels;
             p_ptr_a[i] = p_ptr_a[i-1] + num_alms;
         }
@@ -247,10 +249,10 @@ public:
     }
 
 private:
-    size_t m_num_fields;
-    size_t m_l_max;
-    size_t m_m_max;
-    size_t m_num_pixels;
+    std::size_t m_num_fields;
+    std::size_t m_l_max;
+    std::size_t m_m_max;
+    std::size_t m_num_pixels;
     sharp_alm_info * m_p_alm_info;
     sharp_geom_info * m_p_geom_info;
 };

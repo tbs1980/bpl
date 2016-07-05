@@ -31,15 +31,18 @@ public:
     typedef boost::numeric::ublas::vector<complex_scalar_type>
         complex_vector_type;
 
-    static size_t num_sph_hrm_coeffs(size_t const l_max,size_t const m_max) {
-        return (m_max+size_t(1))*(l_max+size_t(2))/size_t(2)
-            +(l_max+size_t(1))*(l_max-m_max);
+    static std::size_t num_sph_hrm_coeffs(
+        std::size_t const l_max,
+        std::size_t const m_max
+    ) {
+        return (m_max+std::size_t(1))*(l_max+std::size_t(2))/std::size_t(2)
+            +(l_max+std::size_t(1))*(l_max-m_max);
     }
 
-    static size_t num_real_indep_coeffs(
-        size_t const num_fields,
-        size_t const l_max,
-        size_t const m_max
+    static std::size_t num_real_indep_coeffs(
+        std::size_t const num_fields,
+        std::size_t const l_max,
+        std::size_t const m_max
     ) {
         return 2*num_sph_hrm_coeffs(l_max,m_max)*num_fields;
     }
@@ -84,9 +87,9 @@ public:
     }
 
     inline complex_scalar_type & operator() (
-        size_t const field,
-        size_t const mtpl_l,
-        size_t const mtpl_m
+        std::size_t const field,
+        std::size_t const mtpl_l,
+        std::size_t const mtpl_m
     ){
         BOOST_ASSERT(field < m_num_fields);
         BOOST_ASSERT(mtpl_l <= m_l_max);
@@ -98,9 +101,9 @@ public:
     }
 
     inline complex_scalar_type const & operator() (
-        size_t const field,
-        size_t const mtpl_l,
-        size_t const mtpl_m
+        std::size_t const field,
+        std::size_t const mtpl_l,
+        std::size_t const mtpl_m
     ) const {
         BOOST_ASSERT(field < m_num_fields);
         BOOST_ASSERT(mtpl_l <= m_l_max);
@@ -111,30 +114,30 @@ public:
         );
     }
 
-    inline size_t l_max() const {
+    inline std::size_t l_max() const {
         return m_l_max;
     }
 
-    inline size_t m_max() const {
+    inline std::size_t m_max() const {
         return m_l_max;
     }
 
-    inline size_t num_fields() const {
+    inline std::size_t num_fields() const {
         return m_num_fields;
     }
 
-    inline size_t num_sph_hrm_coeffs() const {
+    inline std::size_t num_sph_hrm_coeffs() const {
         return m_num_shp_hrm_coeffs;
     }
 
     inline void set_mtpl(
-        size_t const mtpl_l,
-        size_t const mtpl_m,
+        std::size_t const mtpl_l,
+        std::size_t const mtpl_m,
         complex_vector_type const & shc_row
     ){
         BOOST_ASSERT(mtpl_l <= m_l_max);
         BOOST_ASSERT(mtpl_m <= mtpl_l);
-        for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
+        for(std::size_t fld_i=0;fld_i<m_num_fields;++fld_i){
             m_hrm_coeffs(
                 fld_i,
                 ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
@@ -143,13 +146,13 @@ public:
     }
 
     inline void get_mtpl(
-        size_t const mtpl_l,
-        size_t const mtpl_m,
+        std::size_t const mtpl_l,
+        std::size_t const mtpl_m,
         complex_vector_type & shc_row
     ) const {
         BOOST_ASSERT(mtpl_l <= m_l_max);
         BOOST_ASSERT(mtpl_m <= mtpl_l);
-        for(size_t fld_i=0;fld_i<m_num_fields;++fld_i){
+        for(std::size_t fld_i=0;fld_i<m_num_fields;++fld_i){
             shc_row(fld_i) = m_hrm_coeffs(
                 fld_i,
                 ((mtpl_m*(2*m_l_max+1-mtpl_m))>>1 ) + mtpl_l
@@ -165,10 +168,10 @@ public:
         return m_hrm_coeffs;
     }
 private:
-    size_t m_num_fields;
-    size_t m_l_max;
-    size_t m_m_max;
-    size_t m_num_shp_hrm_coeffs;
+    std::size_t m_num_fields;
+    std::size_t m_l_max;
+    std::size_t m_m_max;
+    std::size_t m_num_shp_hrm_coeffs;
     complex_matrix_type m_hrm_coeffs;
 };
 

@@ -38,3 +38,5 @@ enable_testing()
 add_subdirectory(test)
 add_subdirectory(perf)
 add_subdirectory(src)
+
+# cmake ../ -DSHARP_ROOT=/home/sbalan/github/libsharp/auto_libs -DHEALPix_ROOT=/home/sbalan/github/healpix-code/src/cxx/optimized_gcc
