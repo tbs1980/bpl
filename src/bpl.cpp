@@ -27,6 +27,7 @@ int main(int argc, char** argv){
             using namespace blackpearl::ui;
             bpl bpl_ui;
             bpl_ui.parse_input( var_map["input-file"].as< std::string >() );
+            bpl_ui.run_sampler();
         }
         else {
             std::cout << ":( No arguments passed. "

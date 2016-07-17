@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <exception>
 #include <sstream>
+#include <functional>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 #include <healpix_map.h>
 #include <healpix_map_fitsio.h>
 #include <arr.h>
@@ -22,6 +24,9 @@
 #include <blackpearl/core/pow_spec.hpp>
 #include <blackpearl/core/shc_ps_utils.hpp>
 #include <blackpearl/core/sht.hpp>
+#include <blackpearl/log_post/taylor_2008.hpp>
+#include <mpp/chains/mcmc_chain.hpp>
+#include <mpp/hamiltonian/nuts.hpp>
 
 namespace blackpearl { namespace ui {
 
@@ -131,15 +136,47 @@ public:
         sht<real_scalar_t> sh_trans(num_fields,l_max,m_max,num_pixels_data);
         sh_trans.analyse(m_data,alms);
         pow_spec<real_scalar_t> sigma =  extract_pow_spec(alms);
-        std::size_t num_cls = sigma.num_real_indep_coeffs(num_fields,l_max);
-        std::size_t num_alms
-            = alms.num_real_indep_coeffs(num_fields,l_max,m_max);
-        m_start_q0 = vector<real_scalar_t>(num_cls+num_alms);
+        m_num_cls = sigma.num_real_indep_coeffs(num_fields,l_max);
+        m_num_alms = alms.num_real_indep_coeffs(num_fields,l_max,m_max);
+        m_start_q0 = vector<real_scalar_t>(m_num_cls+m_num_alms);
         convert_to_real_vector<real_scalar_t>(alms, sigma, m_start_q0);
     }
 
     void run_sampler() {
+        using namespace mpp::hamiltonian;
+        using namespace mpp::chains;
+        using namespace boost::numeric::ublas;
+        using namespace blackpearl::log_post;
+        typedef taylor_2008<real_scalar_t> taylor_2008_t;
+        using std::placeholders::_1;
+        typedef nut_sampler<real_scalar_t> nut_sampler_t;
+        typedef nut_sampler_t::log_post_func_t log_post_func_t;
+        typedef nut_sampler_t::grad_log_post_func_t grad_log_post_func_t;
 
+        taylor_2008_t lp_t08(m_data,m_prec_mat,m_win_func);
+        log_post_func_t log_posterior
+            = std::bind (&taylor_2008_t::log_post,&lp_t08,_1);
+        grad_log_post_func_t grad_log_posterior
+            = std::bind (&taylor_2008_t::grad_log_post,&lp_t08,_1);
+        real_scalar_t const delta = 0.65;
+        std::size_t const num_dims = m_start_q0.size();
+        nut_sampler_t nuts_spr(
+            log_posterior,
+            grad_log_posterior,
+            num_dims,
+            delta
+        );
+        std::mt19937 rng;
+        std::size_t const num_samples(100);
+        mcmc_chain<real_scalar_t> chn = nuts_spr.run_sampler(
+            num_samples,
+            m_start_q0,
+            rng
+        );
+        // std::string chn_file_name
+        //     = m_ptree.get<std::string>("output.chain_file");
+        // std::cout<<"--> Chain output file = " << chn_file_name << std::endl;
+        // chn.write_samples_to_csv(chn_file_name);
     }
 
     void write_chains() {
@@ -155,6 +192,8 @@ private:
     blackpearl::core::sph_diag_prec_mat<real_scalar_t> m_prec_mat;
     blackpearl::core::win_func<real_scalar_t> m_win_func;
     boost::numeric::ublas::vector<real_scalar_t> m_start_q0;
+    std::size_t m_num_cls;
+    std::size_t m_num_alms;
 };
 
 }}

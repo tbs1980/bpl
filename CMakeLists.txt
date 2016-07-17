@@ -27,11 +27,13 @@ find_package(Boost 1.53.0 REQUIRED COMPONENTS
 find_package(SHARP REQUIRED)
 find_package(HEALPix REQUIRED)
 # TODO make sure that we are using the same fitsio for the healpix
+find_package(MPP REQUIRED)
 
 include_directories(include)
 include_directories(
     ${Boost_INCLUDE_DIRS}
     ${SHARP_INCLUDE_DIRS}
+    ${MPP_INCLUDE_DIRS}
 )
 
 enable_testing()

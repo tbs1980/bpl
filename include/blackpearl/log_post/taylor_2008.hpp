@@ -211,9 +211,9 @@ public:
     }
 
 private:
-    blackpearl::core::sph_data<real_scalar_type> m_data;
-    blackpearl::core::sph_diag_prec_mat<real_scalar_type> m_prec_mat;
-    blackpearl::core::win_func<real_scalar_type> m_win_func;
+    blackpearl::core::sph_data<real_scalar_type> const & m_data;
+    blackpearl::core::sph_diag_prec_mat<real_scalar_type> const & m_prec_mat;
+    blackpearl::core::win_func<real_scalar_type> const & m_win_func;
     blackpearl::core::sht<real_scalar_type> m_sh_trans;
     size_t m_num_fields;
     size_t m_l_max;
