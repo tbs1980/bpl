@@ -167,16 +167,18 @@ public:
             delta
         );
         std::mt19937 rng;
-        std::size_t const num_samples(100);
+        std::size_t const num_burn_in = 20;
+        nuts_spr.adapt_epsilon(num_burn_in,m_start_q0,rng);
+        std::size_t const num_samples = 100;
         mcmc_chain<real_scalar_t> chn = nuts_spr.run_sampler(
             num_samples,
             m_start_q0,
             rng
         );
-        // std::string chn_file_name
-        //     = m_ptree.get<std::string>("output.chain_file");
-        // std::cout<<"--> Chain output file = " << chn_file_name << std::endl;
-        // chn.write_samples_to_csv(chn_file_name);
+        std::string chn_file_name
+            = m_ptree.get<std::string>("output.chain_file");
+        std::cout<<"--> Chain output file = " << chn_file_name << std::endl;
+        chn.write_samples_to_csv(chn_file_name);
     }
 
     void write_chains() {
