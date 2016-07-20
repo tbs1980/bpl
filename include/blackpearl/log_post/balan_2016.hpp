@@ -171,36 +171,73 @@ public:
     }
 
     real_vector_t grad_log_post(real_vector_t const & pos_q) {
-        // using namespace blackpearl::core;
-        // using namespace blackpearl::utils;
-        // using namespace boost::numeric::ublas;
-        // typedef matrix<real_scalar_t> real_matrix_t;
-        // BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
-        // sph_hrm_coeffs<real_scalar_t> shc_a(m_num_fields, m_l_max, m_m_max);
-        // pow_spec<real_scalar_t> ps_g(m_num_fields, m_l_max);
-        // convert_to_coeffs<real_scalar_t>(pos_q, shc_a, ps_g);
-        // pow_spec<real_scalar_t> ps_sigma =  extract_pow_spec(shc_a);
-        //
-        // pow_spec<real_scalar_t> ps_dg(m_num_fields, m_l_max);
-        // pow_spec<real_scalar_t> ps_c_inv(m_num_fields, m_l_max);
-        // for(std::size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
-        //     real_matrix_t g_l(m_num_fields, m_num_fields);
-        //     ps_g.get_mtpl(mtpl_l,g_l);
-        //     real_matrix_t c_l = compute_matrix_exp(g_l);
-        //     real_matrix_t sigma_l(m_num_fields,m_num_fields);
-        //     ps_sigma.get_mtpl(mtpl_l,sigma_l);
-        //     real_matrix_t c_inv_l(m_num_fields,m_num_fields);
-        //     compute_inverse<real_scalar_t>(c_l,c_inv_l);
-        //     real_matrix_t c_inv_sigma_l = prod(c_inv_l,sigma_l);
-        //     real_matrix_t id_I
-        //         = identity_matrix<real_scalar_t>(m_num_fields);
-        //     real_matrix_t phi_l = 0.5*(2.*mtpl_l+1.)*(c_inv_sigma_l - id_I);
-        //     real_matrix_t dg_l
-        //         = 2.*phi_l - element_prod(phi_l,id_I) + id_I;
-        //     ps_dg.set_mtpl(mtpl_l,dg_l);
-        //     ps_c_inv.set_mtpl(mtpl_l,c_inv_l);
-        // }
-        //
+        using namespace blackpearl::core;
+        using namespace blackpearl::utils;
+        using namespace boost::numeric::ublas;
+        typedef matrix<real_scalar_t> real_matrix_t;
+        BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
+        sph_hrm_coeffs<real_scalar_t> shc_x(m_num_fields, m_l_max, m_m_max);
+        pow_spec<real_scalar_t> ps_f(m_num_fields, m_l_max);
+        convert_to_coeffs<real_scalar_t>(pos_q, shc_x, ps_f);
+
+        pow_spec<real_scalar_t> ps_c(m_num_fields, m_l_max);
+        for(std::size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
+            real_matrix_t f_l(m_num_fields, m_num_fields);
+            ps_f.get_mtpl(mtpl_l,f_l);
+            real_matrix_t c_l = compute_matrix_log(f_l);
+            ps_c.set_mtpl(mtpl_l,c_l);
+        }
+        sph_hrm_coeffs<real_scalar_t> shc_a(m_num_fields, m_l_max, m_m_max);
+        for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i) {
+            for(std::size_t mtpl_l=0; mtpl_l <= m_l_max; ++mtpl_l) {
+                shc_a(fld_i,mtpl_l,0)
+                    = ps_c(fld_i,0,mtpl_l)*shc_x(0,mtpl_l,0);
+            }
+            for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m) {
+                for(std::size_t mtpl_l=mtpl_m; mtpl_l<=m_l_max; ++mtpl_l) {
+                    shc_a(fld_i,mtpl_l,mtpl_m)
+                        = real_scalar_t(0.5)*ps_c(fld_i,0,mtpl_l)
+                            *shc_x(0,mtpl_l,mtpl_m);
+                }
+            }
+
+            for(std::size_t fld_j = 1; fld_j < m_num_fields; ++fld_j) {
+                for(std::size_t mtpl_l=0; mtpl_l <= m_l_max; ++mtpl_l) {
+                    shc_a(fld_i,mtpl_l,0)
+                        = ps_c(fld_i,fld_j,mtpl_l)*shc_x(fld_j,mtpl_l,0);
+                }
+                for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m) {
+                    for(std::size_t mtpl_l=mtpl_m; mtpl_l<=m_l_max; ++mtpl_l) {
+                        shc_a(fld_i,mtpl_l,mtpl_m)
+                            = real_scalar_t(0.5)*ps_c(fld_i,0,mtpl_l)
+                                *shc_x(fld_j,mtpl_l,mtpl_m);
+                    }
+                }
+            }
+        }
+
+        pow_spec<real_scalar_t> ps_sigma =  extract_pow_spec(shc_a);
+        
+        pow_spec<real_scalar_t> ps_dg(m_num_fields, m_l_max);
+        pow_spec<real_scalar_t> ps_c_inv(m_num_fields, m_l_max);
+        for(std::size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
+            real_matrix_t g_l(m_num_fields, m_num_fields);
+            ps_g.get_mtpl(mtpl_l,g_l);
+            real_matrix_t c_l = compute_matrix_exp(g_l);
+            real_matrix_t sigma_l(m_num_fields,m_num_fields);
+            ps_sigma.get_mtpl(mtpl_l,sigma_l);
+            real_matrix_t c_inv_l(m_num_fields,m_num_fields);
+            compute_inverse<real_scalar_t>(c_l,c_inv_l);
+            real_matrix_t c_inv_sigma_l = prod(c_inv_l,sigma_l);
+            real_matrix_t id_I
+                = identity_matrix<real_scalar_t>(m_num_fields);
+            real_matrix_t phi_l = 0.5*(2.*mtpl_l+1.)*(c_inv_sigma_l - id_I);
+            real_matrix_t dg_l
+                = 2.*phi_l - element_prod(phi_l,id_I) + id_I;
+            ps_dg.set_mtpl(mtpl_l,dg_l);
+            ps_c_inv.set_mtpl(mtpl_l,c_inv_l);
+        }
+
         // sph_hrm_coeffs<real_scalar_t> shc_a_fwd(shc_a);
         // apply_win_func<real_scalar_t>(m_win_func,shc_a_fwd);
         // sph_data<real_scalar_t> data_fwd(m_data.spins(),m_data.num_pixels());
