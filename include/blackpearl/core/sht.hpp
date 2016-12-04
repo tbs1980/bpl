@@ -133,8 +133,8 @@ public:
             p_ptr_a[i] = p_ptr_a[i-1] + num_alms;
             p_ptr_m[i] = p_ptr_m[i-1] + num_pixels;
         }
-        int const add_output = 0;
-        int const sharp_nv = 0;
+        // int const add_output = 0;
+        // int const sharp_nv = 0;
         int num_parallel_transforms = (int) num_fields_s_0;
         int spin = 0;
         int flags = (int) cxxjobhelper__<real_scalar_type>::val;
@@ -142,14 +142,14 @@ public:
         {
             sharp_execute(SHARP_ALM2MAP,
                 spin,
-                add_output,
+                /*add_output,*/
                 (void*) & p_ptr_a[0],
                 (void*) & p_ptr_m[0],
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
                 flags,
-                sharp_nv,
+                /*sharp_nv,*/
                 NULL,
                 NULL
             );
@@ -160,14 +160,14 @@ public:
         {
             sharp_execute(SHARP_ALM2MAP,
                 spin,
-                add_output,
+                /*add_output,*/
                 (void*) & p_ptr_a[num_fields_s_0],
                 (void*) & p_ptr_m[num_fields_s_0],
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
                 flags,
-                sharp_nv,
+                /*sharp_nv,*/
                 NULL,
                 NULL
             );
@@ -204,8 +204,8 @@ public:
             p_ptr_m[i] = p_ptr_m[i-1] + num_pixels;
             p_ptr_a[i] = p_ptr_a[i-1] + num_alms;
         }
-        int const add_output = 0;
-        int const sharp_nv = 0;
+        // int const add_output = 0;
+        // int const sharp_nv = 0;
         int num_parallel_transforms = (int) num_fields_s_0;
         int spin = 0;
         int flags = (int) cxxjobhelper__<real_scalar_type>::val;
@@ -213,14 +213,14 @@ public:
         {
             sharp_execute(SHARP_MAP2ALM,
                 spin,
-                add_output,
+                /*add_output,*/
                 (void*) & p_ptr_a[0],
                 (void*) & p_ptr_m[0],
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
                 flags,
-                sharp_nv,
+                /*sharp_nv,*/
                 NULL,
                 NULL
             );
@@ -231,14 +231,14 @@ public:
         {
             sharp_execute(SHARP_MAP2ALM,
                 spin,
-                add_output,
+                /*add_output,*/
                 (void*) & p_ptr_a[num_fields_s_0],
                 (void*) & p_ptr_m[num_fields_s_0],
                 (const sharp_geom_info*) m_p_geom_info,
                 (const sharp_alm_info*) m_p_alm_info,
                 num_parallel_transforms,
                 flags,
-                sharp_nv,
+                /*sharp_nv,*/
                 NULL,
                 NULL
             );

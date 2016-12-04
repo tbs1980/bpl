@@ -76,14 +76,14 @@ void test_sht_data_layout(){
     unsigned long long op_count = 0;
     sharp_execute(SHARP_MAP2ALM,
         spin,
-        add_output,
+        /*add_output,*/
         (void*) & p_ptr_a[0],
         (void*) & p_ptr_m[0],
         (const sharp_geom_info*) m_p_geom_info,
         (const sharp_alm_info*) m_p_alm_info,
         num_parallel_transforms,
         cxxjobhelper__<double>::val,
-        sharp_nv,
+        /*sharp_nv,*/
         &wall_time,
         &op_count
     );

@@ -20,6 +20,10 @@
 #include "../core/win_func_shc_utils.hpp"
 #include "../utils/lin_alg_utils.hpp"
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 namespace blackpearl{ namespace log_post {
 
 

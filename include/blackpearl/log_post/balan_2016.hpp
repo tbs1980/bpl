@@ -217,12 +217,12 @@ public:
         }
 
         pow_spec<real_scalar_t> ps_sigma =  extract_pow_spec(shc_a);
-        
+
         pow_spec<real_scalar_t> ps_dg(m_num_fields, m_l_max);
         pow_spec<real_scalar_t> ps_c_inv(m_num_fields, m_l_max);
         for(std::size_t mtpl_l =0; mtpl_l <= m_l_max; ++mtpl_l){
             real_matrix_t g_l(m_num_fields, m_num_fields);
-            ps_g.get_mtpl(mtpl_l,g_l);
+            // ps_g.get_mtpl(mtpl_l,g_l); //FIXME
             real_matrix_t c_l = compute_matrix_exp(g_l);
             real_matrix_t sigma_l(m_num_fields,m_num_fields);
             ps_sigma.get_mtpl(mtpl_l,sigma_l);
