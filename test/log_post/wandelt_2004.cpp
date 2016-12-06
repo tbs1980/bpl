@@ -7,6 +7,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/assert.hpp>
 
 #include <blackpearl/core/pow_spec.hpp>
 #include <blackpearl/core/sph_hrm_coeffs.hpp>
@@ -23,9 +24,11 @@ void test_wandelt_2004_init(){
     using namespace blackpearl::core;
     using namespace blackpearl::log_post;
     using namespace boost::numeric::ublas;
+    typedef vector<real_scalar_type> real_vector_type;
 
     std::vector<std::size_t> spins = {0}; // FIXME more than one filed is necessary
     std::size_t const num_fields = spins.size();
+    BOOST_ASSERT(num_fields == 1);
     std::size_t const l_max = 8;
     std::size_t const m_max = l_max;
     std::size_t const num_sides = l_max/2;
@@ -70,6 +73,9 @@ void test_wandelt_2004_init(){
 
     wandelt_2004<real_scalar_type> lp_w04(maps,p_mat,w_func);
     lp_w04.log_post(pos_q);
+
+    convert_to_real_vector<real_scalar_type>(alms,cls,pos_q);
+    real_vector_type grad_pos_q = lp_w04.grad_log_post(pos_q);
 }
 
 BOOST_AUTO_TEST_CASE(wandelt_2004_init){
