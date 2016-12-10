@@ -29,7 +29,7 @@ public:
         "The real_scalar_t should be a floating point type");
     typedef boost::numeric::ublas::vector<real_scalar_t> real_vector_t;
     typedef boost::numeric::ublas::matrix<real_scalar_t> real_matrix_t;
-    typedef boost::numeric::ublas::identity_matrix<real_scalar_t> real_identity_matrix_t;
+    typedef boost::numeric::ublas::unbounded_array<real_matrix_t> real_matrix_array_t;
 
     wandelt_2004(
         blackpearl::core::sph_data<real_scalar_t> const & data,
@@ -228,19 +228,34 @@ public:
         pow_spec<real_scalar_t> ps_c_inv(m_num_fields, m_l_max);
         for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
             real_matrix_t c_l(m_num_fields, m_num_fields);
-            ps_c.get_mtpl(mtpl_l,c_l);
-            real_matrix_t c_inv_l(m_num_fields,m_num_fields);
-            compute_inverse<real_scalar_t>(c_l,c_inv_l);
-            ps_c_inv.set_mtpl(mtpl_l,c_inv_l);
+            ps_c.get_mtpl(mtpl_l, c_l);
+            real_matrix_t c_inv_l(m_num_fields, m_num_fields);
+            compute_inverse<real_scalar_t>(c_l, c_inv_l);
+            ps_c_inv.set_mtpl(mtpl_l, c_inv_l);
         }
+
+        std::size_t const num_real_alms
+            = sph_hrm_coeffs<real_scalar_t>::num_real_indep_coeffs(
+            m_num_fields,
+            m_l_max,
+            m_m_max
+        );
+        std::size_t const num_real_cls
+            = pow_spec<real_scalar_t>::num_real_indep_coeffs(
+            m_num_fields,
+            m_l_max
+        );
+
+        BOOST_ASSERT(num_real_alms + num_real_cls == m_num_real_coeffs);
 
         real_matrix_t mtrc_tnsr_g(m_num_real_coeffs,m_num_real_coeffs);
 
-        for(std::size_t dim_i = 0; dim_i < m_num_real_coeffs; ++dim_i) {
+        for(std::size_t dim_i = 0; dim_i < num_real_alms; ++dim_i) {
             real_unit_vector_t unit_vect(m_num_real_coeffs, dim_i);
             sph_hrm_coeffs_t unit_shc_a(m_num_fields, m_l_max, m_m_max);
             pow_spec_t unit_ps_c(m_num_fields, m_l_max);
             convert_to_coeffs<real_scalar_t>(unit_vect, unit_shc_a, unit_ps_c);
+            sph_hrm_coeffs_t unit_shc_a_temp(unit_shc_a);
             apply_win_func<real_scalar_t>(m_win_func, unit_shc_a);
             sph_data_t unit_data(m_data.spins(), m_data.num_pixels());
             m_sh_trans.synthesise(unit_shc_a, unit_data);
@@ -257,25 +272,94 @@ public:
                 for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j) {
                     for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
                         unit_shc_a(fld_i, mtpl_l, 0)
-                            -= ps_c_inv(fld_i, fld_j, mtpl_l)
+                            += ps_c_inv(fld_i, fld_j, mtpl_l)
+                                *unit_shc_a_temp(fld_j, mtpl_l, 0);
+                    }
+                    for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m) {
+                        for(std::size_t mtpl_l = mtpl_m; mtpl_l <= m_l_max; ++mtpl_l) {
+                            unit_shc_a(fld_i, mtpl_l, mtpl_m)
+                                += real_scalar_t(2)*ps_c_inv(fld_i,fld_j,mtpl_l)
+                                    *unit_shc_a_temp(fld_j, mtpl_l, mtpl_m);
+                        }
+                    }
+                }
+            }
+            real_vector_t mtrc_tnsr_g_col(m_num_real_coeffs);
+            convert_to_real_vector<real_scalar_t>(unit_shc_a, unit_ps_c, mtrc_tnsr_g_col);
+            for(std::size_t dim_j = 0; dim_j < num_real_alms; ++dim_j){
+                mtrc_tnsr_g(dim_i, dim_j) = mtrc_tnsr_g_col(dim_j);
+            }
+        }
+
+        for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
+            std::size_t const stride = num_real_alms + mtpl_l;
+            for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i) {
+                for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j) {
+                    mtrc_tnsr_g(stride + fld_i, stride + fld_j)
+                        = 2.*ps_c_inv(fld_i, fld_j, mtpl_l);
+                }
+            }
+        }
+
+        return mtrc_tnsr_g;
+    }
+
+    real_matrix_array_t deriv_metric_tensor_log_posterior_dense(real_vector_t const & pos_q ) const {
+        using namespace blackpearl::core;
+        using namespace blackpearl::utils;
+        using namespace boost::numeric::ublas;
+        typedef unit_vector<real_scalar_t> real_unit_vector_t;
+        typedef sph_hrm_coeffs<real_scalar_t> sph_hrm_coeffs_t;
+        typedef pow_spec<real_scalar_t> pow_spec_t;
+        typedef sph_data<real_scalar_t> sph_data_t;
+
+        BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
+
+        pow_spec<real_scalar_t> ps_c_inv_2(m_num_fields, m_l_max);
+        for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
+            real_matrix_t c_l(m_num_fields, m_num_fields);
+            ps_c.get_mtpl(mtpl_l, c_l);
+            real_matrix_t c_inv_l(m_num_fields, m_num_fields);
+            compute_inverse<real_scalar_t>(c_l,c_inv_l);
+            real_matrix_t c_inv_2_l = prod(c_inv_l, c_inv_l);
+            ps_c_inv_2.set_mtpl(mtpl_l, c_inv_2_l);
+        }
+
+        real_matrix_array_t d_mtrc_tnsr_g(
+            pos_q.size(),
+            zero_matrix<real_scalar_t>( pos_q.size(), pos_q.size() )
+        );
+
+        for(std::size_t dim_i = 0; dim_i < num_real_alms; ++dim_i) {
+            real_unit_vector_t unit_vect(m_num_real_coeffs, dim_i);
+            sph_hrm_coeffs_t unit_shc_a(m_num_fields, m_l_max, m_m_max);
+            pow_spec_t unit_ps_c(m_num_fields, m_l_max);
+            convert_to_coeffs<real_scalar_t>(unit_vect, unit_shc_a, unit_ps_c);
+
+            for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i) {
+                for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j) {
+                    for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
+                        unit_shc_a(fld_i, mtpl_l, 0)
+                            = -2.*ps_c_inv_2(fld_i, fld_j, mtpl_l)
                                 *unit_shc_a(fld_j, mtpl_l, 0);
                     }
                     for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m) {
                         for(std::size_t mtpl_l = mtpl_m; mtpl_l <= m_l_max; ++mtpl_l) {
                             unit_shc_a(fld_i, mtpl_l, mtpl_m)
-                                -= real_scalar_t(2)*ps_c_inv(fld_i,fld_j,mtpl_l)
+                                = -2.*2.*ps_c_inv(fld_i,fld_j,mtpl_l)
                                     *unit_shc_a(fld_j, mtpl_l, mtpl_m);
                         }
                     }
                 }
             }
-            convert_to_real_vector<real_scalar_t>(unit_shc_a, unit_ps_c, unit_vect);
-            for(std::size_t dim_j = 0; dim_j < m_num_real_coeffs; ++dim_j){
-                mtrc_tnsr_g(dim_i, dim_j) = unit_vect(dim_j);
+            real_vector_t mtrc_tnsr_g_col(m_num_real_coeffs);
+            convert_to_real_vector<real_scalar_t>(unit_shc_a, unit_ps_c, mtrc_tnsr_g_col);
+            for(std::size_t dim_j = 0; dim_j < num_real_alms; ++dim_j){
+                mtrc_tnsr_g(dim_i, dim_j) = mtrc_tnsr_g_col(dim_j);
             }
         }
-    }
 
+    }
 
 private:
     blackpearl::core::sph_data<real_scalar_t> const & m_data;
