@@ -330,35 +330,59 @@ public:
             zero_matrix<real_scalar_t>( pos_q.size(), pos_q.size() )
         );
 
-        for(std::size_t dim_i = 0; dim_i < num_real_alms; ++dim_i) {
-            real_unit_vector_t unit_vect(m_num_real_coeffs, dim_i);
-            sph_hrm_coeffs_t unit_shc_a(m_num_fields, m_l_max, m_m_max);
-            pow_spec_t unit_ps_c(m_num_fields, m_l_max);
-            convert_to_coeffs<real_scalar_t>(unit_vect, unit_shc_a, unit_ps_c);
+        std::size_t const num_real_alms
+            = sph_hrm_coeffs<real_scalar_t>::num_real_indep_coeffs(
+            m_num_fields,
+            m_l_max,
+            m_m_max
+        );
+        std::size_t const num_real_cls
+            = pow_spec<real_scalar_t>::num_real_indep_coeffs(
+            m_num_fields,
+            m_l_max
+        );
 
-            for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i) {
-                for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j) {
-                    for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
-                        unit_shc_a(fld_i, mtpl_l, 0)
-                            = -2.*ps_c_inv_2(fld_i, fld_j, mtpl_l)
-                                *unit_shc_a(fld_j, mtpl_l, 0);
-                    }
-                    for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m) {
-                        for(std::size_t mtpl_l = mtpl_m; mtpl_l <= m_l_max; ++mtpl_l) {
-                            unit_shc_a(fld_i, mtpl_l, mtpl_m)
-                                = -2.*2.*ps_c_inv(fld_i,fld_j,mtpl_l)
-                                    *unit_shc_a(fld_j, mtpl_l, mtpl_m);
+        BOOST_ASSERT(num_real_alms + num_real_cls == m_num_real_coeffs);
+
+        std::size_t blk_pos = 0;
+        for(std::size_t mtpl_blk_l = 0; mtpl_blk_l <= m_l_max; ++mtpl_blk_l) {
+            std::size_t const num_real_alms_l
+                = sph_hrm_coeffs<real_scalar_t>::num_real_indep_coeffs(
+                m_num_fields,
+                mtpl_blk_l,
+                mtpl_blk_l
+            );
+            for(std::size_t dim_i = 0; dim_i < num_real_alms_l; ++dim_i) {
+                real_unit_vector_t unit_vect(m_num_real_coeffs, blk_pos + dim_i);
+                sph_hrm_coeffs_t unit_shc_a(m_num_fields, m_l_max, m_m_max);
+                pow_spec_t unit_ps_c(m_num_fields, m_l_max);
+                convert_to_coeffs<real_scalar_t>(unit_vect, unit_shc_a, unit_ps_c);
+
+                for(std::size_t fld_i = 0; fld_i < m_num_fields; ++fld_i) {
+                    for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j) {
+                        for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
+                            unit_shc_a(fld_i, mtpl_l, 0)
+                                = -2.*ps_c_inv_2(fld_i, fld_j, mtpl_l)
+                                    *unit_shc_a(fld_j, mtpl_l, 0);
+                        }
+                        for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m) {
+                            for(std::size_t mtpl_l = mtpl_m; mtpl_l <= m_l_max; ++mtpl_l) {
+                                unit_shc_a(fld_i, mtpl_l, mtpl_m)
+                                    = -2.*2.*ps_c_inv(fld_i,fld_j,mtpl_l)
+                                        *unit_shc_a(fld_j, mtpl_l, mtpl_m);
+                            }
                         }
                     }
                 }
+                real_vector_t d_mtrc_tnsr_g_col(m_num_real_coeffs);
+                convert_to_real_vector<real_scalar_t>(unit_shc_a, unit_ps_c, d_mtrc_tnsr_g_col);
+                for(std::size_t dim_j = 0; dim_j < num_real_alms; ++dim_j){
+                    d_mtrc_tnsr_g[num_real_alms + mtpl_blk_l](blk_pos + dim_i, blk_pos + dim_j)
+                        = mtrc_tnsr_g_col(blk_pos + dim_j);
+                }
             }
-            real_vector_t mtrc_tnsr_g_col(m_num_real_coeffs);
-            convert_to_real_vector<real_scalar_t>(unit_shc_a, unit_ps_c, mtrc_tnsr_g_col);
-            for(std::size_t dim_j = 0; dim_j < num_real_alms; ++dim_j){
-                mtrc_tnsr_g(dim_i, dim_j) = mtrc_tnsr_g_col(dim_j);
-            }
+            blk_pos += num_real_alms_l;
         }
-
     }
 
 private:
