@@ -309,11 +309,15 @@ public:
         using namespace blackpearl::utils;
         using namespace boost::numeric::ublas;
         typedef unit_vector<real_scalar_t> real_unit_vector_t;
+        typedef zero_vector<real_scalar_t> real_zero_vector_t;
         typedef sph_hrm_coeffs<real_scalar_t> sph_hrm_coeffs_t;
         typedef pow_spec<real_scalar_t> pow_spec_t;
         typedef sph_data<real_scalar_t> sph_data_t;
 
         BOOST_ASSERT(pos_q.size() == m_num_real_coeffs);
+        sph_hrm_coeffs<real_scalar_t> shc_a(m_num_fields, m_l_max, m_m_max);
+        pow_spec<real_scalar_t> ps_c(m_num_fields, m_l_max);
+        convert_to_coeffs<real_scalar_t>(pos_q, shc_a, ps_c);
 
         pow_spec<real_scalar_t> ps_c_inv_2(m_num_fields, m_l_max);
         for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
@@ -349,6 +353,10 @@ public:
             std::size_t const num_real_alms_l
                 = sph_hrm_coeffs<real_scalar_t>::num_real_indep_coeffs(
                 m_num_fields,
+                (mtpl_blk_l+1),
+                (mtpl_blk_l+1)
+            ) - sph_hrm_coeffs<real_scalar_t>::num_real_indep_coeffs(
+                m_num_fields,
                 mtpl_blk_l,
                 mtpl_blk_l
             );
@@ -362,13 +370,13 @@ public:
                     for(std::size_t fld_j = 0; fld_j < m_num_fields; ++fld_j) {
                         for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
                             unit_shc_a(fld_i, mtpl_l, 0)
-                                = -2.*ps_c_inv_2(fld_i, fld_j, mtpl_l)
+                                = -ps_c_inv_2(fld_i, fld_j, mtpl_l)
                                     *unit_shc_a(fld_j, mtpl_l, 0);
                         }
                         for(std::size_t mtpl_m = 1; mtpl_m <= m_m_max; ++mtpl_m) {
                             for(std::size_t mtpl_l = mtpl_m; mtpl_l <= m_l_max; ++mtpl_l) {
                                 unit_shc_a(fld_i, mtpl_l, mtpl_m)
-                                    = -2.*2.*ps_c_inv(fld_i,fld_j,mtpl_l)
+                                    = -2.*ps_c_inv_2(fld_i,fld_j,mtpl_l)
                                         *unit_shc_a(fld_j, mtpl_l, mtpl_m);
                             }
                         }
@@ -377,11 +385,30 @@ public:
                 real_vector_t d_mtrc_tnsr_g_col(m_num_real_coeffs);
                 convert_to_real_vector<real_scalar_t>(unit_shc_a, unit_ps_c, d_mtrc_tnsr_g_col);
                 for(std::size_t dim_j = 0; dim_j < num_real_alms; ++dim_j){
-                    d_mtrc_tnsr_g[num_real_alms + mtpl_blk_l](blk_pos + dim_i, blk_pos + dim_j)
-                        = mtrc_tnsr_g_col(blk_pos + dim_j);
+                    d_mtrc_tnsr_g[num_real_alms + mtpl_blk_l](blk_pos + dim_i, dim_j)
+                        = mtrc_tnsr_g_col(dim_j);
                 }
             }
             blk_pos += num_real_alms_l;
+        }
+
+
+        real_zero_vector_t zero_vect(m_num_real_coeffs);
+        sph_hrm_coeffs_t zero_shc_a(m_num_fields, m_l_max, m_m_max);
+        pow_spec_t zero_ps_c(m_num_fields, m_l_max);
+        convert_to_coeffs<real_scalar_t>(zero_vect, zero_shc_a, zero_ps_c);
+        pow_spec<real_scalar_t> ps_neg_2_over_c_inv_2(m_num_fields, m_l_max);
+        for(std::size_t mtpl_l = 0; mtpl_l <= m_l_max; ++mtpl_l) {
+            real_matrix_t c_inv_2_l(m_num_fields, m_num_fields);
+            ps_c_inv_2.get_mtpl(mtpl_l, c_inv_2_l);
+            c_inv_2_l *= -2.;
+            ps_neg_2_over_c_inv_2.set_mtpl(mtpl_l, c_inv_2_l);
+        }
+
+        std::size_t blk_pos = num_real_alms;
+        for(std::size_t mtpl_blk_l = 0; mtpl_blk_l <= m_l_max; ++mtpl_blk_l) {
+            real_vector_t d_mtrc_tnsr_g_col(m_num_real_coeffs);
+            convert_to_real_vector<real_scalar_t>(zero_shc_a, ps_neg_2_over_c_inv_2, d_mtrc_tnsr_g_col);
         }
     }
 
